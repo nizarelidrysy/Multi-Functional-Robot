@@ -5,9 +5,11 @@
 *.map
 *.sketch.bin
 *.sketch.hex
-
+.DS_Store
 build/
 .arduino/
 
 .pio
 .vscode
+.DS_Store
+Other/
