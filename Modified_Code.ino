@@ -2381,7 +2381,7 @@ void handleCreditsMode() {
   String creditsMessages[] = {
     "Made by :\nNizar EL Idrysy",
     "Contains the\nmodified .ino",
-    "2169 lines of\ndedicated coding",
+    "3244 lines of\ndedicated coding",
     "Use CoolTerm on\nWindows for HC06",
     "Shout out to my\nbro Gemini ;)",
     "1500+ Dirhams of\nmaterials",
