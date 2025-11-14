@@ -2,6 +2,7 @@
 #include <LiquidCrystal_I2C.h> // LCD Library
 #include <Servo.h> // Servo-motor Library
 #include <Keypad.h> // Keypad Library - NEW
+int variablechanger=1;
 bool isCreditsActive = false;
 int currentCreditMessage = 0;
 unsigned long lastMessageTime = 0;
@@ -14,9 +15,9 @@ const unsigned long MENU_SWITCH_INTERVAL = 2000; // 2 seconds
 bool isServoMovementEnabled = false;
 /* Pins & functions */
 // LEDs
-/* States */
+int morseRepeater=1;
 bool diceRollerJustEntered = false;
-enum Mode { NONE, BLUETOOTH, MAZE, TESTING, CREDITS, FOLLOW_ME, MAN_TST , MORSE_COM , DICE_ROLLER , RANDOMIZER, JOYSTICK_TEST};
+enum Mode { NONE, BLUETOOTH, MAZE, TESTING, CREDITS, FOLLOW_ME, MAN_TST , MORSE_COM, JOYSTICK_TEST, DICE};
 // NEW: Global flag for manual test mode entry
 // ⭐ NEW: Variables for MORSE_COM Mode
 bool morseComJustEntered = false;
@@ -436,20 +437,11 @@ void loop() {
 
   // --- GLOBAL EMERGENCY BUTTON HANDLING (S16 / 'D' ) ---
   // Note: 'X' from Serial for emergency is handled directly within controlBluetooth now.
-  if (currentMode != NONE && customKey == 'D') { // S16 is 'D'
-    Serial.println("EMERGENCY button triggered (Keypad)! ");
-    Serial1.println("EMERGENCY button triggered (Keypad)! ");
+  if ((currentMode != NONE && customKey == 'D') || (currentMode == NONE && customKey == 'D')) { // S16 is 'D'
+    
     handleEmergency();
     showModeSelection(); // Go back to mode selection
     return; // Exit loop iteration as mode has changed
-  }
-  // If in NONE mode, S16 ('D') acts as emergency
-  else if (currentMode == NONE && customKey == 'D') { // S16 is 'D'
-      Serial.println("EMERGENCY button triggered (from NONE mode)! ");
-      Serial1.println("EMERGENCY button triggered (from NONE mode)! ");
-      handleEmergency(); // Still call emergency handler to show message and beep
-      showModeSelection(); // Go back to mode selection immediately
-      return; // Exit loop iteration as mode has changed
   }
 
 
@@ -460,8 +452,8 @@ void loop() {
       if (Serial1.available() && Serial1.peek() == '1') {
           Serial1.read();
       }
-      Serial.println("Button 1 triggered (BT Mode)");
-      Serial1.println("Button 1 triggered (BT Mode)");
+      Serial.println(" -- BLUETOOTH MODE TRIGGERED !");
+      Serial1.println(" -- BLUETOOTH MODE TRIGGERED !"); //lmaooo
       beep(); // Single beep for BT mode
       displayDigit(1);
       lcd.clear();
@@ -477,14 +469,15 @@ void loop() {
       if (Serial1.available() && Serial1.peek() == '2') {
           Serial1.read();
       }
-      Serial.println("Button 2 triggered (Maze Mode Pre-sequence)");
-      Serial1.println("Button 2 triggered (Maze Mode Pre-sequence)");
+      
 
       // ⭐ MODIFIED: Pre-sequence for Maze Mode: LCD message, 6 rapid beeps with G segment, and servo movements
       lcd.clear();
       digitalWrite(RED_LED, LOW);
       digitalWrite(GREEN_LED, LOW);
       digitalWrite(BLUE_LED, LOW);
+      Serial.println(" -- DAMI 3000 uses a Right-Hand Algorithm !");
+      Serial1.println(" -- DAMI 3000 uses a Right-Hand Algorithm !");
       displayCentered("DAMI 3000 uses a", 0);
       displayCentered("Right-Hand Alg !", 1);
       stopMotors(); // Ensure motors are off during this sequence
@@ -518,6 +511,8 @@ digitalWrite(BLUE_LED, HIGH);
       // Fast Countdown from 3
       lcd.clear();
       displayCentered("Starting in...", 0);
+      Serial.println(" -- Starting in 3, 2, 1...");
+      Serial1.println(" -- Starting in 3, 2, 1...");
       for (int count = 3; count >= 1; count--) {
         displayCentered(String(count), 1); // Display count on LCD
         digitalWrite(RED_LED, HIGH);
@@ -531,6 +526,8 @@ digitalWrite(BLUE_LED, HIGH);
       
       // Now actually enter Maze Mode
       lcd.clear(); // Clear LCD before entering mode
+      Serial.println(" -- GO !");
+      Serial1.println(" -- GO !");
       displayCentered("GO !", 0); // Display "GO !" on LCD
       digitalWrite(GREEN_LED, HIGH);
               displayDigit(0); // Display count on 7-segment
@@ -549,8 +546,7 @@ digitalWrite(BLUE_LED, HIGH);
     
     // S3 ('3') for entering Testing Mode from NONE mode
     else if (customKey == '3') { // S3 is '3'
-      Serial.println("Keypad 3 triggered (Testing Mode)");
-      Serial1.println("Keypad 3 triggered (Testing Mode)");
+     
       currentMode = TESTING;
       currentTestState = TEST_STATE_INIT;
       testStateStartTime = millis();
@@ -561,15 +557,14 @@ digitalWrite(BLUE_LED, HIGH);
       delay(500); // Debounce for mode transition
     }
     else if (customKey == '4') { 
-      Serial.println("Keypad 5 triggered (Follow Me Mode)");
+
       beep();
       currentMode = FOLLOW_ME;
       currentFollowState = FOLLOW_STATE_FOLLOWING; // Initialize state
       stopMotors(); // Ensure robot is stationary
     }
     else if (customKey == '5') {
-      Serial.println("Keypad 5 triggered (MAN_TST Mode)");
-      Serial1.println("Keypad 5 triggered (MAN_TST Mode)");
+
       beep();
       lcd.clear();
       currentMode = MAN_TST;
@@ -584,7 +579,7 @@ digitalWrite(BLUE_LED, HIGH);
 else if (customKey == 'A') {
   // If in NONE mode, enter CREDITS mode
   if (currentMode == NONE) {
-    Serial.println("Keypad A triggered (CREDITS Mode)");
+
     beep();
     lcd.clear();
     currentMode = CREDITS;
@@ -622,8 +617,29 @@ else if (customKey == 'A') {
   if (currentMode == JOYSTICK_TEST) {
     handleJoyTestMode();
   }
+  else if (analogRead(VRX) > 900 && currentMode == NONE) {
+    currentMode = MORSE_COM;
+    handleMorseCom();
+ 
+  }
+  else if (currentMode == MORSE_COM) {
+    
+    handleMorseCom();
+ 
+  }
+  else if (analogRead(VRY) > 900 && currentMode == NONE) {
+    currentMode = DICE;
+    handleDice();
+ 
+  }
+  else if (currentMode == DICE) {
+    
+    handleDice();
+ 
+  }
   else if (currentMode == BLUETOOTH) { // Call handler for BT mode
     if (!isMazePaused) { 
+        
       controlBluetooth(); 
     } // No argument passed
   }
@@ -673,15 +689,23 @@ else if (currentMode == FOLLOW_ME) {
     if (distance < 100) lcd.print(distance);
     else lcd.print("99");
     lcd.print(" cm");
-
-    Serial1.print("Distance : ");
+    if (distance<=99&&distance!=0){
+      Serial1.print("Distance : ");
     Serial1.print(distance);
     Serial1.println(" cm");
     Serial.print("Distance : ");
     Serial.print(distance);
-    Serial.print(" cm, Keypad: ");
-    Serial.print(customKey); // Print the last pressed keypad key for debugging
-    Serial.println();
+    }
+    else if (distance==0){
+      Serial1.print("Distance : MIN\n");
+    Serial.print("Distance : MIN\n");
+    }
+    else{
+Serial1.print("Distance : MAX\n");
+    Serial.print("Distance : MAX\n");
+    }
+    
+
   }}
   // If no specific mode is active (i.e., currentMode == NONE), run segment animation and LCD blinking
 else if (currentMode == NONE || currentMode == CREDITS) {
@@ -692,7 +716,137 @@ else if (currentMode == NONE || currentMode == CREDITS) {
 /* New Mode Handler: RANDOMIZER Mode */
 /* New Mode Handler: RANDOMIZER Mode */
 /* New Mode Handler: RANDOMIZER Mode */
+void handleDice() {
+    // Note: The global 'diceRollerJustEntered' flag and 'variablechanger' are used for 
+    // initial mode setup, consistent with other handlers in your code[cite: 2164, 2168].
+    
+    // Dice State Enum: Tracks the current phase of the dice roller
+    static enum DiceState { WAITING, ROLLING, RESULT } currentDiceState = WAITING;
+    static unsigned long rollStartTime = 0;
+    const unsigned long ROLL_DURATION = 2500; // 1.5 seconds for the quick number sequence
+    
+    // --- Mode Entry Setup ---
+    if (variablechanger==1) {
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+        Serial.println(" -- DICE MODE TRIGGERED !");
+        Serial1.println(" -- DICE MODE TRIGGERED !");
+        lcd.clear();
+        clearSegments(); // Clear the 7-segment display
+        stopMotors();
+        displayCentered("RANDOM DICE MODE", 0);
+                displayCentered("~Press to Roll", 1);
+                beep(100);
+    displayLetter('D');
+    digitalWrite(BLUE_LED, HIGH);
+    delay(100);
+    digitalWrite(BLUE_LED, LOW);
+    clearSegments();
+    beep(100); 
+    digitalWrite(BLUE_LED, HIGH);
+    displayLetter('D');
+       
+    stopMotors();
+        
+        variablechanger = 0; // Reset variablechanger after mode entry
+        
+        currentDiceState = WAITING; // Start in the waiting state
+    }
 
+    // --- Keypad Input ---
+    char customKey = keypad.getKey();
+
+    // --- Global Exit Check (S16 / 'D') ---
+    if (customKey == 'D') { 
+        handleEmergency();
+        currentMode = NONE;
+        showModeSelection();
+      
+        return;
+    }
+
+    // --- Dice State Machine ---
+    switch (currentDiceState) {
+        case WAITING: {
+            // Await a click on button 'A'
+            if ((digitalRead(CLICK) == LOW) || (customKey == 'A')) { // Key 'A' is S4
+                currentDiceState = ROLLING;
+                rollStartTime = millis();
+                // Seed the random number generator for a more random result
+                randomSeed(analogRead(A0)); 
+                beep(50);
+            }
+            break;
+        }
+        case ROLLING: {
+          Serial.println("\n -- Rolling...");
+        Serial1.println("\n -- Rolling...");
+            unsigned long currentTime = millis();
+            if (currentTime - rollStartTime < ROLL_DURATION) {
+                // Rapidly cycle numbers (0-9) - Update every 50ms
+                // The delay is implicitly controlled by the loop duration
+                int currentDigit = (currentTime / 50) % 10; 
+                displayDigit(currentDigit); // Display the number (0-9)
+                beep();
+                // Blink the LCD to show activity
+                if ((currentTime / 100) % 2 == 0) {
+                    lcd.setCursor(0, 1);
+                    lcd.print("   ROLLING...   ");
+                    digitalWrite(BLUE_LED, HIGH);
+                } else {
+                    lcd.setCursor(0, 1);
+                    lcd.print("                ");
+                    digitalWrite(BLUE_LED, LOW);
+                }
+            } else {
+              digitalWrite(BLUE_LED, LOW);
+                // End of roll sequence - Land on a random number
+                int final_roll = random(0, 10);
+                Serial.println("\n -- Result is : \n");
+        Serial1.println("\n -- Result is : \n");
+                 // Random number from 0 to 9
+                 Serial.println(final_roll);
+        Serial1.println(final_roll);
+        
+                displayDigit(final_roll);
+                
+                lcd.clear();
+                displayCentered("ROLL COMPLETE!", 0);
+                displayCentered("Result: " + String(final_roll), 1);
+                digitalWrite(GREEN_LED, HIGH);
+                beep(300); // Long beep for the result
+
+                currentDiceState = RESULT;
+                rollStartTime = millis(); // Reuse timer for result display duration
+            }
+            break;
+        }
+        case RESULT: {
+            // Stay in result state for 3 seconds, then return to WAITING
+            if (millis() - rollStartTime >= 3000) {
+                clearSegments();
+                lcd.clear();
+                Serial.println("\n -- DICE MODE READY !");
+        Serial1.println("\n -- DICE MODE READY !");
+                displayCentered("RANDOM DICE MODE", 0);
+                displayCentered("~Press to Roll", 1);
+                digitalWrite(GREEN_LED, LOW);
+                 beep(100);
+    displayLetter('D');
+    digitalWrite(BLUE_LED, HIGH);
+    delay(100);
+    digitalWrite(BLUE_LED, LOW);
+    clearSegments();
+    beep(100); 
+    digitalWrite(BLUE_LED, HIGH);
+    displayLetter('D');
+                currentDiceState = WAITING;
+            }
+            break;
+        }
+    }
+}
 /* New Mode Handler */
 /* New Mode Handler: Manual Test (Keypad Control) */
 /* New Mode Handler: Manual Test (Keypad Control) */
@@ -701,7 +855,10 @@ else if (currentMode == NONE || currentMode == CREDITS) {
 void handleJoyTestMode() {
     // You may need to add includes for Wire.h and LiquidCrystal_I2C.h if not present.
     // Ensure VRX, VRY, and CLICK are defined correctly (e.g., const int VRX = A0;).
-
+    if(variablechanger==1){
+        variablechanger=0;
+            Serial.println(" -- JOYSTICK TESTING MODE TRIGGERED !");
+        Serial1.println(" -- JOYSTICK TESTING MODE TRIGGERED !");}
     int vrxValue = analogRead(VRX);
     int vryValue = analogRead(VRY);
     int clickState = digitalRead(CLICK);
@@ -768,7 +925,905 @@ void handleJoyTestMode() {
     // practice inside loop/mode functions, as it slows down your whole program.
     // If you need to slow down the display rate, use a non-blocking timer.
 }
+
+// --- MORSE CODE HELPER FUNCTIONS ---
+// These rely on the existing timing constants (UNIT_TIME, DOT_DURATION, DASH_DURATION, 
+// ELEMENT_SPACE, CHAR_SPACE) and segment pins (SEG_A - SEG_G).
+
+// Assuming SEG_A through SEG_G are defined as per your code [cite: 1993]
+
+
+    
+void displayLetter(char letter) {
+  byte segments = 0;
+  switch (letter) {
+    case 'A': segments = 0b01110111; break;
+        case 'B': segments = 0b01111100; break; // Looks like lowercase 'b'
+        case 'C': segments = 0b00111001; break;
+        case 'D': segments = 0b01011110; break; // Looks like lowercase 'd'
+        case 'E': segments = 0b01111001; break;
+        case 'F': segments = 0b01110001; break;
+        case 'G': segments = 0b01111101; break; // Looks like a '9'
+        case 'H': segments = 0b01110110; break; 
+        case 'I': segments = 0b00000110; break; // Looks like a '1'
+        case 'J': segments = 0b00011110; break;
+        case 'K': segments = 0b01110000; break;
+        case 'L': segments = 0b00111000; break;
+        case 'M': segments = 0b00110111; break;
+        case 'N': segments = 0b01010100; break; // Looks like lowercase 'n'
+        case 'O': segments = 0b00111111; break; // Looks like a '0'
+        case 'P': segments = 0b01110011; break;
+        case 'Q': segments = 0b01100111; break;
+        case 'R': segments = 0b01010000; break; // Looks like lowercase 'r'
+        case 'S': segments = 0b01101101; break; // Looks like a '5'
+        case 'T': segments = 0b01111000; break; // Looks like lowercase 't'
+        case 'U': segments = 0b00111110; break;
+        case 'V': segments = 0b00111110; break;
+        case 'W': segments = 0b00011100; break;
+        case 'X': segments = 0b01110110; break;
+        case 'Y': segments = 0b01101110; break;
+        case 'Z': segments = 0b01011011; break; // Looks like a '2'
+
+        // K, M, V, W, X are generally unrepresentable on a 7-segment display.
+        // --- Numbers (for completeness) ---
+        case '0': segments = 0b00111111; break;
+        case '1': segments = 0b00000110; break;
+        case '2': segments = 0b01011011; break;
+        case '3': segments = 0b01001111; break;
+        case '4': segments = 0b01100110; break;
+        case '5': segments = 0b01101101; break;
+        case '6': segments = 0b01111101; break;
+        case '7': segments = 0b00000111; break;
+        case '8': segments = 0b01111111; break;
+        case '9': segments = 0b01101111; break;
+  }
+  for (int i = 0; i < 9; i++) {
+    digitalWrite(segmentPins[i], (segments >> i) & 0x01);
+  }
+}
+
+
+// Assuming BLUE_LED and BUZZER pins are defined globally.
+// Assuming BUZZER_FREQUENCY (e.g., 500) is defined for the tone.
+const int BUZZER_FREQUENCY = 500; 
+
+void morseElement(char element) {
+    int duration;
+
+    if (element == '.') {
+        duration = DOT_DURATION;
+    } else if (element == '-') {
+        duration = DASH_DURATION;
+    } else {
+        return; // Exit if not dot or dash
+    }
+    
+    // 1. Activate the Blue LED and Buzzer simultaneously
+    digitalWrite(GREEN_LED, HIGH);
+    digitalWrite(RED_LED, LOW);
+    beep(duration);
+    
+    // 2. Wait for the element duration (Dot or Dash time)
+    // The delay() function ensures the LED and tone last for the exact same time.
+    
+    
+    // 3. Deactivate the LED and Buzzer
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(RED_LED, HIGH);
+     
+}
+
+void morseChar(char character) {
+  
+   
+    // Convert to uppercase to handle both 's' and 'S', 'o' and 'O', etc.
+    char upperChar = toupper(character);
+    
+    // 1. Display the current character on the 7-segment display
+    displayLetter(upperChar);
+    
+    // 2. Transmit the Morse Code via buzzer and send character over Serial
+    if (upperChar == 'A') {
+        // A: Dot, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("A");
+        Serial1.println("A");
+    } else if (upperChar == '-') {
+        // - (Hyphen/Minus sign): Dash, Dot, Dot, Dot, Dot, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("-");
+        Serial1.println("-");
+    }
+    else if (upperChar == 'B') {
+        // B: Dash, Dot, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("B");
+        Serial1.println("B");
+    } else if (upperChar == 'C') {
+        // C: Dash, Dot, Dash, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("C");
+        Serial1.println("C");
+    } else if (upperChar == 'D') {
+        // D: Dash, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("D");
+        Serial1.println("D");
+    } else if (upperChar == 'E') {
+        // E: Dot
+        morseElement('.');
+        Serial.println("E");
+        Serial1.println("E");
+    } else if (upperChar == 'F') {
+        // F: Dot, Dot, Dash, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("F");
+        Serial1.println("F");
+    } else if (upperChar == 'G') {
+        // G: Dash, Dash, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("G");
+        Serial1.println("G");
+    } else if (upperChar == 'H') {
+        // H: Dot, Dot, Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("H");
+        Serial1.println("H");
+    } else if (upperChar == 'I') {
+        // I: Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("I");
+        Serial1.println("I");
+    } else if (upperChar == 'J') {
+        // J: Dot, Dash, Dash, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("J");
+        Serial1.println("J");
+    } else if (upperChar == 'K') {
+        // K: Dash, Dot, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("K");
+        Serial1.println("K");
+    } else if (upperChar == 'L') {
+        // L: Dot, Dash, Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("L");
+        Serial1.println("L");
+    } else if (upperChar == 'M') {
+        // M: Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("M");
+        Serial1.println("M");
+    } else if (upperChar == 'N') {
+        // N: Dash, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("N");
+        Serial1.println("N");
+    } else if (upperChar == 'O') {
+        // O: Dash, Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("O");
+        Serial1.println("O");
+    } else if (upperChar == 'P') {
+        // P: Dot, Dash, Dash, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("P");
+        Serial1.println("P");
+    } else if (upperChar == 'Q') {
+        // Q: Dash, Dash, Dot, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("Q");
+        Serial1.println("Q");
+    } else if (upperChar == 'R') {
+        // R: Dot, Dash, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("R");
+        Serial1.println("R");
+    } else if (upperChar == 'S') {
+        // S: Dot, Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("S");
+        Serial1.println("S");
+    } else if (upperChar == 'T') {
+        // T: Dash
+        morseElement('-');
+        Serial.println("T");
+        Serial1.println("T");
+    } else if (upperChar == 'U') {
+        // U: Dot, Dot, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("U");
+        Serial1.println("U");
+    } else if (upperChar == 'V') {
+        // V: Dot, Dot, Dot, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("V");
+        Serial1.println("V");
+    } else if (upperChar == 'W') {
+        // W: Dot, Dash, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("W");
+        Serial1.println("W");
+    } else if (upperChar == 'X') {
+        // X: Dash, Dot, Dot, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("X");
+        Serial1.println("X");
+    } else if (upperChar == 'Y') {
+        // Y: Dash, Dot, Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("Y");
+        Serial1.println("Y");
+    } else if (upperChar == 'Z') {
+        // Z: Dash, Dash, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("Z");
+        Serial1.println("Z");
+    }
+    
+    // --- Numbers ---
+    else if (upperChar == '1') {
+        // 1: Dot, Dash, Dash, Dash, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("1");
+        Serial1.println("1");
+    } else if (upperChar == '2') {
+        // 2: Dot, Dot, Dash, Dash, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("2");
+        Serial1.println("2");
+    } else if (upperChar == '3') {
+        // 3: Dot, Dot, Dot, Dash, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("3");
+        Serial1.println("3");
+    } else if (upperChar == '4') {
+        // 4: Dot, Dot, Dot, Dot, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("4");
+        Serial1.println("4");
+    } else if (upperChar == '5') {
+        // 5: Dot, Dot, Dot, Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("5");
+        Serial1.println("5");
+    } else if (upperChar == '6') {
+        // 6: Dash, Dot, Dot, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("6");
+        Serial1.println("6");
+    } else if (upperChar == '7') {
+        // 7: Dash, Dash, Dot, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("7");
+        Serial1.println("7");
+    } else if (upperChar == '8') {
+        // 8: Dash, Dash, Dash, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("8");
+        Serial1.println("8");
+    } else if (upperChar == '9') {
+        // 9: Dash, Dash, Dash, Dash, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("9");
+        Serial1.println("9");
+    } else if (upperChar == '0') {
+        // 0: Dash, Dash, Dash, Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("0");
+        Serial1.println("0");
+    } else if (upperChar == '!') {
+        // ! (Exclamation Mark): Dash, Dot, Dash, Dot, Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println("!");
+        Serial1.println("!");
+    }
+    else if (upperChar == '?') {
+        // ? (Question Mark): Dot, Dot, Dash, Dash, Dot, Dot
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println("?");
+        Serial1.println("?");
+    }
+    else if (upperChar == '.') {
+        // . (Period): Dot, Dash, Dot, Dash, Dot, Dash
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println(".");
+        Serial1.println(".");
+    }
+    else if (upperChar == ',') {
+        // , (Comma): Dash, Dash, Dot, Dot, Dash, Dash
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        Serial.println(",");
+        Serial1.println(",");
+    }
+    else if (upperChar == ':') {
+        // : (Colon): Dash, Dash, Dash, Dot, Dot, Dot
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('-');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        delay(ELEMENT_SPACE);
+        morseElement('.');
+        Serial.println(":");
+        Serial1.println(":");
+    }
+    // Handle the space character
+    else if (upperChar == ' ') {
+      Serial.println("\n -End of message- \n");
+        Serial1.println("\n -End of message- \n");
+        lcd.setCursor(0, 1);
+        lcd.print("~                ");
+        morseRepeater=1;
+      // Space between words is 7 times the UNIT_TIME.
+      
+      // Do NOT print anything to Serial for a space character to prevent extra lines.
+    }
+    delay(CHAR_SPACE);
+}
+
+// --- TARGET FUNCTION: handleMorseCom ---
+// --- TARGET FUNCTION: handleMorseCom ---
+void handleMorseCom() {
+    // Initial Mode Entry Setup
+    if(variablechanger == 1){
+        variablechanger = 0;
+        Serial.println(" -- MORSE COMMUNICATION MODE TRIGGERED !");
+        Serial1.println(" -- MORSE COMMUNICATION MODE TRIGGERED !");
+        lcd.clear();
+    clearSegments();
+    
+    // Safety & Initialization (assuming these are defined elsewhere)
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
+    
+    beep(100);
+    displayLetter('M');
+    digitalWrite(BLUE_LED, HIGH);
+    delay(100);
+    digitalWrite(BLUE_LED, LOW);
+    clearSegments();
+    beep(100); 
+    digitalWrite(BLUE_LED, HIGH);
+    displayLetter('M');
+    stopMotors();
+    
+    
+    Serial.println("\n -- Ready for Serial Input or Keypad Command !\n");
+    Serial1.println("\n -- Ready for Serial Input or Keypad Command !\n");
+    Serial.println(" -- Transmitted Message :\n");
+    Serial1.println(" -- Transmitted Message :\n");
+    lcd.setCursor(0, 0);
+    lcd.print("MORSE COMMT MODE");
+    lcd.setCursor(0, 1);
+    lcd.print("USE COOLTERM /BT");
+    
+    delay(1000);
+digitalWrite(BLUE_LED, LOW);
+clearSegments();
+    delay(1000);
+    lcd.clear();
+    
+    beep(100);
+    displayLetter('8');
+    digitalWrite(RED_LED, HIGH);
+    delay(100);
+    clearSegments();
+    
+    
+    lcd.setCursor(0, 0); 
+    lcd.print("SEND YOUR LETTER");
+    
+    lcd.setCursor(0, 1);
+    lcd.print("~"); 
+    
+    }
+
+    // Initial setup and LCD message
+    
+    
+    // Display interactive prompt
+    
+    
+    
+    
+    // Define Keys (Use your actual keypad characters)
+          // Placeholder for Exit button
+    
+    // Main Communication Loop
+        
+        // --- 1. Keypad Input Check (for Replay/Exit) ---
+        
+        
+    
+            char command = 0;
+  while (Serial1.available()) {
+    command = Serial1.read(); // Read the latest character
+  
+            
+
+        // --- 2. Serial Input Check (Keyboard/Bluetooth Command) ---
+        
+            char receivedChar = Serial1.read();
+            // Convert to uppercase so the switch only needs capital letters
+            
+
+            Serial.println(command);
+            // Echo the received command on the LCD
+           
+            
+            switch (command) {
+                // --- Letters A-Z ---
+                case 'A': morseChar('A');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('A');
+          morseRepeater++; break;
+
+case 'B': morseChar('B');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('B');
+          morseRepeater++; break;
+
+case 'C': morseChar('C');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('C');
+          morseRepeater++; break;
+
+case 'D': morseChar('D');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('D');
+          morseRepeater++; break;
+
+case 'E': morseChar('E');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('E');
+          morseRepeater++; break;
+case '-': morseChar('-');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('-');
+          morseRepeater++; break;
+case 'F': morseChar('F');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('F');
+          morseRepeater++; break;
+
+case 'G': morseChar('G');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('G');
+          morseRepeater++; break;
+
+case 'H': morseChar('H');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('H');
+          morseRepeater++; break;
+
+case 'I': morseChar('I');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('I');
+          morseRepeater++; break;
+
+case 'J': morseChar('J');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('J');
+          morseRepeater++; break;
+
+case 'K': morseChar('K');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('K');
+          morseRepeater++; break;
+
+case 'L': morseChar('L');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('L');
+          morseRepeater++; break;
+case '!': morseChar('!');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('!');
+          morseRepeater++; break;
+
+case '?': morseChar('?');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('?');
+          morseRepeater++; break;
+
+case '.': morseChar('.');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('.');
+          morseRepeater++; break;
+
+case ',': morseChar(',');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print(',');
+          morseRepeater++; break;
+
+case ':': morseChar(':');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print(':');
+          morseRepeater++; break;
+case 'M': morseChar('M');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('M');
+          morseRepeater++; break;
+
+case 'N': morseChar('N');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('N');
+          morseRepeater++; break;
+
+case 'O': morseChar('O');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('O');
+          morseRepeater++; break;
+
+case 'P': morseChar('P');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('P');
+          morseRepeater++; break;
+
+case 'Q': morseChar('Q');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('Q');
+          morseRepeater++; break;
+
+case 'R': morseChar('R');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('R');
+          morseRepeater++; break;
+
+case 'S': morseChar('S');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('S');
+          morseRepeater++; break;
+
+case 'T': morseChar('T');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('T');
+          morseRepeater++; break;
+
+case 'U': morseChar('U');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('U');
+          morseRepeater++; break;
+
+case 'V': morseChar('V');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('V');
+          morseRepeater++; break;
+
+case 'W': morseChar('W');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('W');
+          morseRepeater++; break;
+
+case 'X': morseChar('X');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('X');
+          morseRepeater++; break;
+
+case 'Y': morseChar('Y');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('Y');
+          morseRepeater++; break;
+
+case 'Z': morseChar('Z');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('Z');
+          morseRepeater++; break;
+                
+                // --- Numbers 0-9 ---
+                case '0': morseChar('0');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('0');
+          morseRepeater++; break;
+
+case '1': morseChar('1');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('1');
+          morseRepeater++; break;
+
+case '2': morseChar('2');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('2');
+          morseRepeater++; break;
+
+case '3': morseChar('3');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('3');
+          morseRepeater++; break;
+
+case '4': morseChar('4');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('4');
+          morseRepeater++; break;
+
+case '5': morseChar('5');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('5');
+          morseRepeater++; break;
+
+case '6': morseChar('6');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('6');
+          morseRepeater++; break;
+
+case '7': morseChar('7');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('7');
+          morseRepeater++; break;
+
+case '8': morseChar('8');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('8');
+          morseRepeater++; break;
+
+case '9': morseChar('9');
+          lcd.setCursor(morseRepeater, 1);
+          lcd.print('9');
+          morseRepeater++; break;
+                case ' ': morseChar(' '); break;
+                
+                // Default Case: Handle Newline, Carriage Return, or other non-Morse characters
+                default:
+                    // Only process letters/numbers. Ignore other characters (like the 'Enter' key)
+                    break;
+            }
+        }
+        
+        delay(50); // Small delay for loop stability
+    
+}
 void handleManTstMode(char customKey) {
+  if(variablechanger==1){
+        variablechanger=0;
+          Serial.println(" -- MANUAL TESTING MODE TRIGGERED !");
+        Serial1.println(" -- MANUAL TESTING MODE TRIGGERED !");}
   // --- ONE-TIME SETUP --;-
   if (manTstJustEntered) {
     digitalWrite(RED_LED,LOW);
@@ -965,7 +2020,10 @@ void displayP() {
 // Handler for Follow Me Mode
 
 void handleFollowMode() {
-
+  if(variablechanger==1){
+        variablechanger=0;
+        Serial.println(" -- FOLLOW ME MODE TRIGGERED !");
+        Serial1.println(" -- FOLLOW ME MODE TRIGGERED !");}
   unsigned long currentTime = millis();
 
     digitalWrite(RED_LED, LOW);
@@ -1026,6 +2084,8 @@ lcd.print("Threshold: 20 cm      "); // Print 16 spaces
 }
 /* Functions */
 void showWelcome() {
+  Serial.println(" -- Hello! I'm DAMI 3000!");
+      Serial1.println(" -- Hello! I'm DAMI 3000!");
   lcd.clear();
   displayCentered("Hello!", 0);
   displayCentered("I'm DAMI 3000!", 1);
@@ -1103,6 +2163,8 @@ void showWelcome() {
   }
   delay(1000); // Final delay after welcome sequence
   lcd.clear();
+  Serial.println(" -- Made with love by Nizar <3");
+      Serial1.println(" -- Made with love by Nizar <3");
   displayCentered("Made with love", 0);
   displayCentered("by Nizar <3", 1);
 
@@ -1273,7 +2335,8 @@ void showModeSelection() {
   lcd.clear();
 
   lcd.clear(); // Clear LCD after transition message
-
+  Serial.println(" -- Choose a mode :");
+      Serial1.println(" -- Choose a mode :");
   displayCentered(" :BTH :MAZE :TSA", 0); // Display "1:BT 2:Maze" centered on the top line
   displayCentered(" :CRD :FLWM :TSM", 1);
  
@@ -1300,6 +2363,10 @@ void beep(int duration) {
 }
 
 void handleCreditsMode() {
+  if(variablechanger==1){
+        variablechanger=0;
+          Serial.println(" -- CREDITS MODE TRIGGERED !");
+        Serial1.println(" -- CREDITS MODE TRIGGERED !");}
   stopMotors();
   servoSweep();
   digitalWrite(RIGHT_LED, LOW);
@@ -1379,24 +2446,15 @@ void handleCreditsMode() {
 
 }
 
-void displayLetter(char letter) {
-  byte segments = 0;
-  switch (letter) {
-    case 'E': segments = 0b01111001; break;
-    case 'H': segments = 0b01110110; break;
-    case 'X': segments = 0b01110110;
-    case 'C': segments = 0b00000000; break; // This is the pattern for 'C'
-  }
-  for (int i = 0; i < 9; i++) {
-    digitalWrite(segmentPins[i], (segments >> i) & 0x01);
-  }
-}
 
 // This function now handles 7-segment display animation and LED hover effect.
 
 
 
 void handleEmergency() {
+  variablechanger=1;
+          Serial.println(" -- EMERGENCY MODE TRIGGERED !");
+        Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
   stopMotors();
   isMazePaused = false;
   digitalWrite(BUZZER, LOW); // Ensure buzzer is OFF during emergency
@@ -1518,7 +2576,7 @@ void controlBluetooth() { // MODIFIED: Now accepts the character read in loop()
         }
         break;
       case 'S':
-        if (isBackwardToggled) { // If already moving backward, toggle off
+        if (isBackwardToggled || isForwardToggled) { // If already moving backward, toggle off
           resetMovementToggles();
         } else { // Start moving backward
           backward();
@@ -1594,8 +2652,6 @@ void controlBluetooth() { // MODIFIED: Now accepts the character read in loop()
         updateMovementState(lastNonMovementState); // No change to RED/GREEN LEDs for buzzer
         break;
       case 'X': // Emergency from Bluetooth
-        Serial.println("EMERGENCY button triggered (Bluetooth)! ");
-        Serial1.println("EMERGENCY button triggered (Bluetooth)! ");
         handleEmergency(); // Call emergency handler
         showModeSelection(); // Go back to mode selection
         return; // Exit function early as mode has changed
@@ -1879,6 +2935,14 @@ void executeMazeTurn(String direction) {
 
 // Maze Mode Handler - Implements the Left-Hand Rule Algorithm
 void handleMazeMode() {
+      if(variablechanger==1){
+        variablechanger=0;
+Serial.println(" -- MAZE MODE TRIGGERED !");
+        Serial1.println(" -- MAZE MODE TRIGGERED !");
+        
+      }
+      
+          
   static unsigned long lastSegmentBlinkTime = 0; // Timer for 7-segment blinking
   static bool showSegmentDigit = true;         // State for 7-segment blinking
   static unsigned long lastBeepTimeMoving = 0;  // Timer for beeping while moving
@@ -2001,6 +3065,11 @@ void handleMazeMode() {
 
 // New Testing Mode Handler
 void handleTestingMode() {
+  if(variablechanger==1){
+        variablechanger=0;
+          Serial.println(" -- AUTOMATIC TESTING MODE TRIGGERED !");
+        Serial1.println(" -- AUTOMATIC TESTING MODE TRIGGERED !");
+  }
   static unsigned long lastLedBlinkTime = 0;
   static bool ledState = LOW; // For blinking turn signals and new red/white LEDs
   static unsigned long lastBuzzerBeapTime = 0;
@@ -2060,11 +3129,17 @@ void handleTestingMode() {
   lcd.setCursor(0, 0);
   lcd.print("Distance : ");
   long distance = measureDistance();
-  if (distance < 10) lcd.print("0");
+  if (distance < 10) {
+    lcd.print("0");
+    
+  }
+  
   if (distance < 100) lcd.print(distance);
   else lcd.print("99");
   lcd.print(" cm");
 
+  
+  
   // State machine for testing sequence
   switch (currentTestState) {
     case TEST_STATE_INIT:
