@@ -14,7 +14,7 @@
 // New LEDs
 #define RED_LED_1 12 // New Red LED on PWM pin 12
 #define RED_LED_2 11 // New Red LED on PWM pin 11
-#define WHITE_LED 10 // New White LED on PWM pin 10
+#define WHITE_LED 10 // New White LED on PWM pin 10x
 
 // Buzzer
 #define BUZZER 49
