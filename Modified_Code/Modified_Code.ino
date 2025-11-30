@@ -10,6 +10,7 @@ Servo myservo;
 #define IN4 53
 #define ENA 3
 #define ENB 4
+#define BUZZER 49
 #define SERVO_PIN 2
 #define TRIG_PIN 43
 #define ECHO_PIN 44
@@ -777,10 +778,12 @@ void handleDice()
       displayCentered("ROLL COMPLETE!", 0);
       displayCentered("Result: " + String(final_roll), 1);
       digitalWrite(GREEN_LED, HIGH);
-      Beep(300);
+      tone(BUZZER, NOTE_C6);
       currentDiceState = RESULT;
       rollStartTime = millis();
+      delay(1000);
     }
+    noTone(BUZZER);
     break;
   }
   case RESULT:
@@ -2223,9 +2226,9 @@ void handleCreditsMode()
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(BLUE_LED, LOW);
   String creditsMessages[] = {
-      "Made by :\nNizar EL Idrysy",
+      "Made by :\nNizar EL IDRYSY",
       "Contains the\nmodified .ino",
-      "3241 lines of\ndedicated coding",
+      "3289 lines of\ndedicated coding",
       "Use CoolTerm on\nWindows for HC06",
       "Shout out to my\nbro Gemini ;",
       "1500+ Dirhams of\nmaterials",
@@ -2243,7 +2246,7 @@ void handleCreditsMode()
       "Shout out to my\nparents for",
       "their support &\nhelp & care <3",
       "More on LinkedIn :&\n@Nizar EL Idrysy",
-      "DAMI 3000 !\nLoves you all :D"};
+      "DAMI 3000 !\nLoves you ALL :D"};
   const int numMessages = 22;
   static unsigned long lastSegmentBlinkTime = 0;
   static bool showSegmentC = true;
