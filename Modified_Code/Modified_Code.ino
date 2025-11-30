@@ -31,7 +31,115 @@ Servo myservo;
 #define RED_LED_1 12
 #define RED_LED_2 11
 #define WHITE_LED 10
-#define BUZZER 49
+const int NOTE_REST = 0;
+const int NOTE_C0 = 16;
+const int NOTE_CS0 = 17;
+const int NOTE_D0 = 18;
+const int NOTE_DS0 = 19;
+const int NOTE_E0 = 21;
+const int NOTE_F0 = 22;
+const int NOTE_FS0 = 23;
+const int NOTE_G0 = 25;
+const int NOTE_GS0 = 26;
+const int NOTE_A0 = 28;
+const int NOTE_AS0 = 29;
+const int NOTE_B0 = 31;
+const int NOTE_C1 = 33;
+const int NOTE_CS1 = 35;
+const int NOTE_D1 = 37;
+const int NOTE_DS1 = 39;
+const int NOTE_E1 = 41;
+const int NOTE_F1 = 44;
+const int NOTE_FS1 = 46;
+const int NOTE_G1 = 49;
+const int NOTE_GS1 = 52;
+const int NOTE_A1 = 55;
+const int NOTE_AS1 = 58;
+const int NOTE_B1 = 62;
+const int NOTE_C2 = 65;
+const int NOTE_CS2 = 69;
+const int NOTE_D2 = 73;
+const int NOTE_DS2 = 78;
+const int NOTE_E2 = 82;
+const int NOTE_F2 = 87;
+const int NOTE_FS2 = 93;
+const int NOTE_G2 = 98;
+const int NOTE_GS2 = 104;
+const int NOTE_A2 = 110;
+const int NOTE_AS2 = 117;
+const int NOTE_B2 = 123;
+const int NOTE_C3 = 131;
+const int NOTE_CS3 = 139;
+const int NOTE_D3 = 147;
+const int NOTE_DS3 = 156;
+const int NOTE_E3 = 165;
+const int NOTE_F3 = 175;
+const int NOTE_FS3 = 185;
+const int NOTE_G3 = 196;
+const int NOTE_GS3 = 208;
+const int NOTE_A3 = 220;
+const int NOTE_AS3 = 233;
+const int NOTE_B3 = 247;
+const int NOTE_C4 = 262;
+const int NOTE_CS4 = 277;
+const int NOTE_D4 = 294;
+const int NOTE_DS4 = 311;
+const int NOTE_E4 = 330;
+const int NOTE_F4 = 349;
+const int NOTE_FS4 = 370;
+const int NOTE_G4 = 392;
+const int NOTE_GS4 = 415;
+const int NOTE_A4 = 440;
+const int NOTE_AS4 = 466;
+const int NOTE_B4 = 494;
+const int NOTE_C5 = 523;
+const int NOTE_CS5 = 554;
+const int NOTE_D5 = 587;
+const int NOTE_DS5 = 622;
+const int NOTE_E5 = 659;
+const int NOTE_F5 = 698;
+const int NOTE_FS5 = 740;
+const int NOTE_G5 = 784;
+const int NOTE_GS5 = 831;
+const int NOTE_A5 = 880;
+const int NOTE_AS5 = 932;
+const int NOTE_B5 = 988;
+const int NOTE_C6 = 1047;
+const int NOTE_CS6 = 1109;
+const int NOTE_D6 = 1175;
+const int NOTE_DS6 = 1245;
+const int NOTE_E6 = 1319;
+const int NOTE_F6 = 1397;
+const int NOTE_FS6 = 1480;
+const int NOTE_G6 = 1568;
+const int NOTE_GS6 = 1661;
+const int NOTE_A6 = 1760;
+const int NOTE_AS6 = 1865;
+const int NOTE_B6 = 1976;
+const int NOTE_C7 = 2093;
+const int NOTE_CS7 = 2217;
+const int NOTE_D7 = 2349;
+const int NOTE_DS7 = 2489;
+const int NOTE_E7 = 2637;
+const int NOTE_F7 = 2794;
+const int NOTE_FS7 = 2960;
+const int NOTE_G7 = 3136;
+const int NOTE_GS7 = 3322;
+const int NOTE_A7 = 3520;
+const int NOTE_AS7 = 3733;
+const int NOTE_B7 = 3951;
+const int NOTE_C8 = 4186;
+const int NOTE_CS8 = 4435;
+const int NOTE_D8 = 4699;
+const int NOTE_DS8 = 4978;
+const int NOTE_E8 = 5274;
+const int NOTE_F8 = 5588;
+const int NOTE_FS8 = 5920;
+const int NOTE_G8 = 6272;
+const int NOTE_GS8 = 6645;
+const int NOTE_A8 = 7040;
+const int NOTE_AS8 = 7466;
+const int NOTE_B8 = 7902;
 const int UNIT_TIME = 100;
 const int DOT_DURATION = UNIT_TIME;
 const int DASH_DURATION = UNIT_TIME * 3;
@@ -161,13 +269,17 @@ void handleCreditsMode();
 void morseElement(char element);
 void displayDigit(int digit);
 void handleManTstMode(char customKey);
-void beep(int duration);
 void displayLetter(char letter);
 void executeMazeTurn(String direction);
 void handleRandomizerMode(char customKey);
 void displayCentered(String msg, int row);
 void updateMovementState(String state, bool forceUpdate = false);
-void beep(int duration = 100);
+void Beep(int duration);
+void Beep(int duration = 100);
+void alertBeep();
+void welcomeBeep();
+void mazeMessageBeep();
+void menuBeep();
 void morseChar(char character);
 long measureDistance();
 byte rowPins[ROWS] = {35, 36, 37, 38};
@@ -179,7 +291,6 @@ FollowState currentFollowState = FOLLOW_STATE_WAITING;
 MazeState currentMazeState = MAZE_STATE_MOVING_FORWARD;
 TestState currentTestState = TEST_STATE_INIT;
 NoneModeState currentNoneModeState = NONE_STATE_WAITING;
-
 void setup()
 {
   lcd.init();
@@ -224,7 +335,7 @@ void loop()
   {
     if (currentMode == MAZE || currentMode == BLUETOOTH || currentMode == FOLLOW_ME)
     {
-      beep(50);
+      Beep(50);
       isMazePaused = !isMazePaused;
       if (isMazePaused)
       {
@@ -298,7 +409,7 @@ void loop()
       }
       Serial.println(" -- BLUETOOTH MODE TRIGGERED !");
       Serial1.println(" -- BLUETOOTH MODE TRIGGERED !");
-      beep();
+      Beep();
       displayDigit(1);
       lcd.clear();
       currentMode = BLUETOOTH;
@@ -313,40 +424,24 @@ void loop()
       {
         Serial1.read();
       }
+      clearSegments();
+      digitalWrite(segmentPins[4], HIGH);
+      digitalWrite(segmentPins[5], HIGH);
+      digitalWrite(segmentPins[6], HIGH);
       lcd.clear();
       digitalWrite(RED_LED, LOW);
       digitalWrite(GREEN_LED, LOW);
-      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(BLUE_LED, HIGH);
       Serial.println(" -- DAMI 3000 uses a Right-Hand Algorithm !");
       Serial1.println(" -- DAMI 3000 uses a Right-Hand Algorithm !");
       displayCentered("DAMI 3000 uses a", 0);
       displayCentered("Right-Hand Alg !", 1);
       stopMotors();
+      myservo.write(45);
+      mazeMessageBeep();
+      delay(1500);
       myservo.write(90);
-      for (int i = 0; i < 8; i++)
-      {
-        clearSegments();
-        digitalWrite(segmentPins[6], HIGH);
-        digitalWrite(BUZZER, HIGH);
-        digitalWrite(BLUE_LED, HIGH);
-        if (i % 2 == 0)
-        {
-          myservo.write(0);
-        }
-        else
-        {
-          myservo.write(45);
-        }
-        delay(100);
-        digitalWrite(BUZZER, LOW);
-        digitalWrite(BLUE_LED, LOW);
-        digitalWrite(segmentPins[6], LOW);
-        delay(50);
-      }
-      clearSegments();
-      delay(700);
-      myservo.write(90);
-      delay(1300);
+      digitalWrite(BLUE_LED, LOW);
       lcd.clear();
       displayCentered("Starting in...", 0);
       Serial.println(" -- Starting in 3, 2, 1...");
@@ -356,20 +451,34 @@ void loop()
         displayCentered(String(count), 1);
         digitalWrite(RED_LED, HIGH);
         displayDigit(count);
-        beep(150);
+        if (count == 3)
+        {
+          tone(BUZZER, NOTE_C3);
+          delay(800);
+        }
+        if (count == 2)
+        {
+          tone(BUZZER, NOTE_C4);
+          delay(800);
+        }
+        if (count == 1)
+        {
+          tone(BUZZER, NOTE_C5);
+          delay(800);
+        }
         clearSegments();
-        delay(300);
         digitalWrite(RED_LED, LOW);
       }
       clearSegments();
       lcd.clear();
+      displayDigit(0);
       Serial.println(" -- GO !");
       Serial1.println(" -- GO !");
       displayCentered("GO !", 0);
       digitalWrite(GREEN_LED, HIGH);
-      displayDigit(0);
-      beep(1000);
-      clearSegments();
+      tone(BUZZER, NOTE_C6);
+      delay(1000);
+      noTone(BUZZER);
       currentMode = MAZE;
       currentMazeState = MAZE_STATE_MOVING_FORWARD;
       stateStartTime = millis();
@@ -380,37 +489,53 @@ void loop()
       digitalWrite(GREEN_LED, LOW);
       lcd.clear();
     }
-    else if (customKey == '3')
+    else if (customKey == 'B' || (Serial1.available() && Serial1.peek() == 'B'))
     {
+      if (Serial1.available() && Serial1.peek() == 'B')
+      {
+        Serial1.read();
+      }
       currentMode = TESTING;
       currentTestState = TEST_STATE_INIT;
       testStateStartTime = millis();
       updateMovementState("Testing: Initializing");
       displayDigit(8);
       lcd.clear();
-      beep();
+      Beep();
       delay(500);
     }
-    else if (customKey == '4')
+    else if (customKey == 'A' || (Serial1.available() && Serial1.peek() == 'A'))
     {
-      beep();
+      if (Serial1.available() && Serial1.peek() == 'A')
+      {
+        Serial1.read();
+      }
+      Beep();
       currentMode = FOLLOW_ME;
       currentFollowState = FOLLOW_STATE_FOLLOWING;
       stopMotors();
     }
-    else if (customKey == '5')
+    else if (customKey == '6' || (Serial1.available() && Serial1.peek() == '6'))
     {
-      beep();
+      if (Serial1.available() && Serial1.peek() == '6')
+      {
+        Serial1.read();
+      }
+      Beep();
       lcd.clear();
       currentMode = MAN_TST;
       manTstJustEntered = true;
       updateMovementState("MANUAL TEST READY");
     }
-    else if (customKey == 'A')
+    else if (customKey == '5' || (Serial1.available() && Serial1.peek() == '5'))
     {
+      if (Serial1.available() && Serial1.peek() == '5')
+      {
+        Serial1.read();
+      }
       if (currentMode == NONE)
       {
-        beep();
+        Beep();
         lcd.clear();
         currentMode = CREDITS;
         isCreditsActive = true;
@@ -434,11 +559,11 @@ void loop()
       }
     }
   }
-  if (analogRead(VRX) < 150 && currentMode != JOYSTICK_TEST && currentMode == NONE)
+  if (((analogRead(VRX) < 150) || (Serial1.available() && Serial1.peek() == '7')) && currentMode != JOYSTICK_TEST && currentMode == NONE)
   {
     currentMode = JOYSTICK_TEST;
     lcd.clear();
-    beep();
+    Beep();
     clearSegments();
     stopMotors();
   }
@@ -446,8 +571,12 @@ void loop()
   {
     handleJoyTestMode();
   }
-  else if (analogRead(VRX) > 900 && currentMode == NONE)
+  else if ((customKey == '3' || (Serial1.available() && Serial1.peek() == '3')) && currentMode == NONE)
   {
+    if (Serial1.available() && Serial1.peek() == '3')
+    {
+      Serial1.read();
+    }
     currentMode = MORSE_COM;
     handleMorseCom();
   }
@@ -455,8 +584,12 @@ void loop()
   {
     handleMorseCom();
   }
-  else if (analogRead(VRY) > 900 && currentMode == NONE)
+  else if ((customKey == '4' || (Serial1.available() && Serial1.peek() == '4')) && currentMode == NONE)
   {
+    if (Serial1.available() && Serial1.peek() == '4')
+    {
+      Serial1.read();
+    }
     currentMode = DICE;
     handleDice();
   }
@@ -555,7 +688,6 @@ void loop()
     animateLcdMenu();
   }
 }
-
 void handleDice()
 {
   static enum DiceState { WAITING,
@@ -575,13 +707,13 @@ void handleDice()
     stopMotors();
     displayCentered("RANDOM DICE MODE", 0);
     displayCentered("~Press to Roll", 1);
-    beep(100);
+    Beep(100);
     displayLetter('D');
     digitalWrite(BLUE_LED, HIGH);
     delay(100);
     digitalWrite(BLUE_LED, LOW);
     clearSegments();
-    beep(100);
+    Beep(100);
     digitalWrite(BLUE_LED, HIGH);
     displayLetter('D');
     stopMotors();
@@ -600,12 +732,12 @@ void handleDice()
   {
   case WAITING:
   {
-    if ((digitalRead(CLICK) == LOW) || (customKey == 'A'))
+    if ((digitalRead(CLICK) == LOW) || (customKey == '4'))
     {
       currentDiceState = ROLLING;
       rollStartTime = millis();
       randomSeed(analogRead(A0));
-      beep(50);
+      Beep(50);
     }
     break;
   }
@@ -618,7 +750,7 @@ void handleDice()
     {
       int currentDigit = (currentTime / 50) % 10;
       displayDigit(currentDigit);
-      beep();
+      Beep();
       if ((currentTime / 100) % 2 == 0)
       {
         lcd.setCursor(0, 1);
@@ -645,7 +777,7 @@ void handleDice()
       displayCentered("ROLL COMPLETE!", 0);
       displayCentered("Result: " + String(final_roll), 1);
       digitalWrite(GREEN_LED, HIGH);
-      beep(300);
+      Beep(300);
       currentDiceState = RESULT;
       rollStartTime = millis();
     }
@@ -662,13 +794,13 @@ void handleDice()
       displayCentered("RANDOM DICE MODE", 0);
       displayCentered("~Press to Roll", 1);
       digitalWrite(GREEN_LED, LOW);
-      beep(100);
+      Beep(100);
       displayLetter('D');
       digitalWrite(BLUE_LED, HIGH);
       delay(100);
       digitalWrite(BLUE_LED, LOW);
       clearSegments();
-      beep(100);
+      Beep(100);
       digitalWrite(BLUE_LED, HIGH);
       displayLetter('D');
       currentDiceState = WAITING;
@@ -730,22 +862,8 @@ void handleJoyTestMode()
   }
   unsigned long currentTime = millis();
   digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
   digitalWrite(BLUE_LED, LOW);
-  if (currentTime - lastPauseBlinkTime >= MAZE_PAUSE_BLINK_INTERVAL)
-  {
-    lastPauseBlinkTime = currentTime;
-    isPauseBlinkOn = !isPauseBlinkOn;
-    if (isPauseBlinkOn)
-    {
-      displayDigit(7);
-      digitalWrite(GREEN_LED, HIGH);
-    }
-    else
-    {
-      clearSegments();
-      digitalWrite(GREEN_LED, LOW);
-    }
-  }
 }
 void displayLetter(char letter)
 {
@@ -872,10 +990,12 @@ void morseElement(char element)
   if (element == '.')
   {
     duration = DOT_DURATION;
+    tone(BUZZER, NOTE_A3);
   }
   else if (element == '-')
   {
     duration = DASH_DURATION;
+    tone(BUZZER, NOTE_E3);
   }
   else
   {
@@ -883,7 +1003,8 @@ void morseElement(char element)
   }
   digitalWrite(GREEN_LED, HIGH);
   digitalWrite(RED_LED, LOW);
-  beep(duration);
+  delay(duration);
+  noTone(BUZZER);
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, HIGH);
 }
@@ -1417,13 +1538,13 @@ void handleMorseCom()
     digitalWrite(RED_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
-    beep(100);
+    Beep(100);
     displayLetter('M');
     digitalWrite(BLUE_LED, HIGH);
     delay(100);
     digitalWrite(BLUE_LED, LOW);
     clearSegments();
-    beep(100);
+    Beep(100);
     digitalWrite(BLUE_LED, HIGH);
     displayLetter('M');
     stopMotors();
@@ -1440,7 +1561,7 @@ void handleMorseCom()
     clearSegments();
     delay(1000);
     lcd.clear();
-    beep(100);
+    Beep(100);
     displayLetter('8');
     digitalWrite(RED_LED, HIGH);
     delay(100);
@@ -1858,16 +1979,16 @@ void handleManTstMode(char customKey)
     buzzerIsOn = !buzzerIsOn;
     if (buzzerIsOn)
     {
-      digitalWrite(BUZZER, HIGH);
-      lcd.setCursor(0, 1);
-      lcd.print("   BUZZER: ON      ");
+      displayCentered("BUZZER Testing", 1);
+      for (int m = 0; m < 2000; m++)
+      {
+        tone(BUZZER, m);
+        delay(2);
+      }
     }
-    else
-    {
-      digitalWrite(BUZZER, LOW);
-      lcd.setCursor(0, 1);
-      lcd.print("   BUZZER: OFF      ");
-    }
+    displayCentered("BUZZER Test Done", 1);
+    buzzerIsOn = !buzzerIsOn;
+    noTone(BUZZER);
   }
 }
 void displayF()
@@ -1907,7 +2028,7 @@ void handleFollowMode()
     isPauseBlinkOn = !isPauseBlinkOn;
     if (isPauseBlinkOn)
     {
-      displayDigit(5);
+      displayLetter('F');
       digitalWrite(BLUE_LED, HIGH);
     }
     else
@@ -1953,155 +2074,42 @@ void handleFollowMode()
 }
 void showWelcome()
 {
+  Serial.println(" -- Reseting everything");
+  Serial1.println(" -- Reseting everything");
+  stopMotors();
+  myservo.write(90);
+  servoPos = 90;
+  lcd.clear();
+  displayCentered("Reseting all", 0);
+  displayCentered("Components..", 1);
+  clearSegments();
+  digitalWrite(LEFT_LED, LOW);
+  digitalWrite(RIGHT_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(RED_LED_1, LOW);
+  digitalWrite(RED_LED_2, LOW);
+  digitalWrite(WHITE_LED, LOW);
+  digitalWrite(blueLedPin, LOW);
+  digitalWrite(orangeLedPin, LOW);
+  delay(1100);
   Serial.println(" -- Hello! I'm DAMI 3000!");
   Serial1.println(" -- Hello! I'm DAMI 3000!");
   lcd.clear();
   displayCentered("Hello!", 0);
   displayCentered("I'm DAMI 3000!", 1);
-  for (int i = 0; i < 5; i++)
-  {
-    clearSegments();
-    digitalWrite(segmentPins[6], HIGH);
-    digitalWrite(BUZZER, HIGH);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(blueLedPin, LOW);
-    digitalWrite(orangeLedPin, LOW);
-    if (i == 0)
-    {
-      digitalWrite(RED_LED, HIGH);
-    }
-    else if (i == 1)
-    {
-      digitalWrite(GREEN_LED, HIGH);
-    }
-    else if (i == 2)
-    {
-      digitalWrite(BLUE_LED, HIGH);
-    }
-    else if (i == 3)
-    {
-      digitalWrite(GREEN_LED, HIGH);
-    }
-    else if (i == 4)
-    {
-      digitalWrite(RED_LED, HIGH);
-    }
-    if (i == 0 || i == 2)
-    {
-      digitalWrite(blueLedPin, HIGH);
-    }
-    else if (i == 1 || i == 3)
-    {
-      digitalWrite(orangeLedPin, HIGH);
-    }
-    else if (i == 4)
-    {
-      digitalWrite(blueLedPin, HIGH);
-      digitalWrite(orangeLedPin, HIGH);
-    }
-    if (i == 0 || i == 2)
-    {
-      myservo.write(120);
-    }
-    else if (i == 1 || i == 3)
-    {
-      myservo.write(60);
-    }
-    else if (i == 4)
-    {
-      myservo.write(90);
-    }
-    delay(100);
-    digitalWrite(BUZZER, LOW);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(blueLedPin, LOW);
-    digitalWrite(orangeLedPin, LOW);
-    digitalWrite(segmentPins[6], LOW);
-    delay(50);
-  }
-  delay(1000);
-  lcd.clear();
-  Serial.println(" -- Made with love by Nizar <3");
-  Serial1.println(" -- Made with love by Nizar <3");
-  displayCentered("Made with love", 0);
-  displayCentered("by Nizar <3", 1);
-  for (int i = 0; i < 3; i++)
-  {
-    clearSegments();
-    digitalWrite(segmentPins[6], HIGH);
-    digitalWrite(BUZZER, HIGH);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(blueLedPin, LOW);
-    digitalWrite(orangeLedPin, LOW);
-    if (i == 0)
-    {
-      digitalWrite(RED_LED, HIGH);
-    }
-    else if (i == 1)
-    {
-      digitalWrite(GREEN_LED, HIGH);
-    }
-    else if (i == 2)
-    {
-      digitalWrite(BLUE_LED, HIGH);
-    }
-    else if (i == 3)
-    {
-      digitalWrite(GREEN_LED, HIGH);
-    }
-    else if (i == 4)
-    {
-      digitalWrite(RED_LED, HIGH);
-    }
-    if (i == 0 || i == 2)
-    {
-      digitalWrite(blueLedPin, HIGH);
-    }
-    else if (i == 1 || i == 3)
-    {
-      digitalWrite(orangeLedPin, HIGH);
-    }
-    else if (i == 4)
-    {
-      digitalWrite(blueLedPin, HIGH);
-      digitalWrite(orangeLedPin, HIGH);
-    }
-    if (i == 0)
-    {
-      myservo.write(60);
-    }
-    else if (i == 1)
-    {
-      myservo.write(120);
-    }
-    else if (i == 2)
-    {
-      myservo.write(90);
-    }
-    delay(100);
-    digitalWrite(BUZZER, LOW);
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(GREEN_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(blueLedPin, LOW);
-    digitalWrite(orangeLedPin, LOW);
-    digitalWrite(segmentPins[6], LOW);
-    delay(50);
-  }
+  welcomeBeep();
+  delay(100);
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(LEFT_LED, LOW);
+  digitalWrite(RIGHT_LED, LOW);
+  digitalWrite(blueLedPin, LOW);
+  digitalWrite(orangeLedPin, LOW);
+  digitalWrite(segmentPins[6], LOW);
+  delay(50);
   delay(1000);
 }
 void animateSegmentMenu()
@@ -2160,31 +2168,35 @@ void animateLcdMenu()
     int currentRowRight = (currentRowLeft == 0) ? 1 : 0;
     lcd.setCursor(0, prevRowLeft);
     lcd.print(" ");
-    lcd.setCursor(5, prevRowRight);
+    lcd.setCursor(4, prevRowRight);
     lcd.print(" ");
-    lcd.setCursor(11, prevRowLeft);
+    lcd.setCursor(8, prevRowLeft);
+    lcd.print(" ");
+    lcd.setCursor(12, prevRowRight);
     lcd.print(" ");
     lcd.setCursor(0, currentRowLeft);
     lcd.print("~");
-    lcd.setCursor(5, currentRowRight);
+    lcd.setCursor(4, currentRowRight);
     lcd.print("~");
-    lcd.setCursor(11, currentRowLeft);
+    lcd.setCursor(8, currentRowLeft);
+    lcd.print("~");
+    lcd.setCursor(12, currentRowRight);
     lcd.print("~");
     lcdAnimationPhase++;
   }
 }
 void showModeSelection()
 {
-  currentMode = NONE;
   stopMotors();
-  digitalWrite(BUZZER, LOW);
+  currentMode = NONE;
   clearSegments();
   lcd.clear();
   lcd.clear();
   Serial.println(" -- Choose a mode :");
   Serial1.println(" -- Choose a mode :");
-  displayCentered(" :BTH :MAZE :TSA", 0);
-  displayCentered(" :CRD :FLWM :TSM", 1);
+  displayCentered(" BTH MZE MRS FLM", 0);
+  displayCentered(" DCE CRD MTT ATT", 1);
+  menuBeep();
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, LOW);
   digitalWrite(LEFT_LED, LOW);
@@ -2213,7 +2225,7 @@ void handleCreditsMode()
   String creditsMessages[] = {
       "Made by :\nNizar EL Idrysy",
       "Contains the\nmodified .ino",
-      "3244 lines of\ndedicated coding",
+      "3241 lines of\ndedicated coding",
       "Use CoolTerm on\nWindows for HC06",
       "Shout out to my\nbro Gemini ;",
       "1500+ Dirhams of\nmaterials",
@@ -2241,7 +2253,7 @@ void handleCreditsMode()
     showSegmentC = !showSegmentC;
     if (showSegmentC)
     {
-      displayDigit(4);
+      displayLetter('C');
     }
     else
     {
@@ -2275,12 +2287,12 @@ void handleCreditsMode()
 }
 void handleEmergency()
 {
+  char customKey = '^^';
   variablechanger = 1;
   Serial.println(" -- EMERGENCY MODE TRIGGERED !");
   Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
   stopMotors();
   isMazePaused = false;
-  digitalWrite(BUZZER, LOW);
   myservo.write(90);
   servoPos = 90;
   lcd.clear();
@@ -2305,7 +2317,7 @@ void handleEmergency()
     digitalWrite(RED_LED, HIGH);
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
-    beep(50);
+    alertBeep();
     clearSegments();
     digitalWrite(RED_LED, LOW);
     delay(50);
@@ -2456,9 +2468,18 @@ void controlBluetooth()
       break;
     case 'B':
       buzzerEnabled = !buzzerEnabled;
-      digitalWrite(BUZZER, buzzerEnabled ? HIGH : LOW);
-      lastNonMovementState = buzzerEnabled ? "Buzzer On" : "Buzzer Off";
-      updateMovementState(lastNonMovementState);
+      if (buzzerEnabled)
+      {
+        tone(BUZZER, NOTE_A4);
+        lastNonMovementState = "BUZZER: ON";
+        updateMovementState(lastNonMovementState);
+      }
+      else
+      {
+        noTone(BUZZER);
+        lastNonMovementState = "BUZZER: OFF";
+        updateMovementState(lastNonMovementState);
+      }
       break;
     case 'X':
       handleEmergency();
@@ -2791,26 +2812,29 @@ void handleMazeMode()
     analogWrite(ENA, motorSpeed);
     analogWrite(ENB, motorSpeed);
     updateMovementState("Forward...");
-    digitalWrite(BUZZER, LOW);
     if (millis() - lastBeepTimeMoving >= 800)
     {
       lastBeepTimeMoving = millis();
-      beep(50);
+      Beep(50);
     }
     if (measureDistance() <= OBSTACLE_DISTANCE)
     {
       currentMazeState = MAZE_STATE_OBSTACLE_DETECTED;
       stateStartTime = millis();
       stopMotors();
-      digitalWrite(BUZZER, HIGH);
       updateMovementState("Obstacle!!!!");
+      for (int m = 0; m < 5; m++)
+      {
+        tone(BUZZER, NOTE_B3);
+        delay(100);
+        noTone(BUZZER);
+      }
       delay(1000);
     }
     break;
   case MAZE_STATE_OBSTACLE_DETECTED:
     currentMazeState = MAZE_STATE_SCANNING;
     stateStartTime = millis();
-    digitalWrite(BUZZER, LOW);
     break;
   case MAZE_STATE_SCANNING:
     updateMovementState("Scanning...");
@@ -2841,24 +2865,28 @@ void handleMazeMode()
     stateStartTime = millis();
     break;
   case MAZE_STATE_TURNING_LEFT:
+    tone(BUZZER, NOTE_C7);
     updateMovementState("Turning Left");
     executeMazeTurn("left");
     currentMazeState = MAZE_STATE_MOVING_FORWARD;
     stateStartTime = millis();
     break;
   case MAZE_STATE_TURNING_RIGHT:
+    tone(BUZZER, NOTE_C7);
     updateMovementState("Turning Right");
     executeMazeTurn("right");
     currentMazeState = MAZE_STATE_MOVING_FORWARD;
     stateStartTime = millis();
     break;
   case MAZE_STATE_TURNING_AROUND:
+    tone(BUZZER, NOTE_C7);
     updateMovementState("Turning Around");
     executeMazeTurn("around");
     currentMazeState = MAZE_STATE_MOVING_FORWARD;
     stateStartTime = millis();
     break;
   }
+  noTone(BUZZER);
 }
 void handleTestingMode()
 {
@@ -2905,7 +2933,7 @@ void handleTestingMode()
     {
       digitalWrite(BLUE_LED, HIGH);
     }
-    beep(50);
+    Beep(50);
     digitalWrite(RED_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
@@ -3012,17 +3040,247 @@ void handleTestingMode()
     digitalWrite(RED_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
-    digitalWrite(BUZZER, LOW);
     updateMovementState("Test Finished.");
+    tone(BUZZER, NOTE_C3);
     currentTestState = TEST_STATE_INIT;
     testStateStartTime = millis();
-    delay(2500);
+    delay(1000);
+    noTone(BUZZER);
+    delay(1500);
     break;
   }
 }
-void beep(int duration)
+void alertBeep()
 {
-  digitalWrite(BUZZER, HIGH);
-  delay(duration);
-  digitalWrite(BUZZER, LOW);
+  tone(BUZZER, NOTE_C6, 100);
+  delay(70);
+  noTone(BUZZER);
+}
+void Beep(int duration)
+{
+  tone(BUZZER, NOTE_C5, 100);
+  delay(120);
+  noTone(BUZZER);
+}
+void welcomeBeep()
+{
+  const int PACMAN_TEMPO = 200;
+  int pacmanMelody[] = {
+      NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5,
+      NOTE_G4, NOTE_E4, NOTE_C4,
+      NOTE_REST, NOTE_C5, NOTE_C5, NOTE_REST};
+  int pacmanDurations[] = {
+      8, 8, 8, 8,
+      8, 8, 8,
+      8, 8, 8};
+  int notes = sizeof(pacmanMelody) / sizeof(pacmanMelody[0]);
+  for (int i = 0; i < notes - 1; i++)
+  {
+    int duration = PACMAN_TEMPO / (pacmanDurations[i] / 4);
+    tone(BUZZER, pacmanMelody[i], duration);
+    if (i == 0)
+    {
+      myservo.write(70);
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 1)
+    {
+      myservo.write(110);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 2)
+    {
+      myservo.write(70);
+      digitalWrite(BLUE_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 3)
+    {
+      myservo.write(110);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 4)
+    {
+      myservo.write(70);
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 5)
+    {
+      myservo.write(110);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 6)
+    {
+      myservo.write(70);
+      digitalWrite(BLUE_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(segmentPins[i], HIGH);
+      delay(50);
+    }
+    else if (i == 7)
+    {
+      myservo.write(70);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, HIGH);
+      digitalWrite(segmentPins[0], LOW);
+      digitalWrite(segmentPins[1], LOW);
+      digitalWrite(segmentPins[2], LOW);
+      digitalWrite(segmentPins[3], LOW);
+      digitalWrite(segmentPins[4], LOW);
+      digitalWrite(segmentPins[5], LOW);
+      digitalWrite(segmentPins[6], LOW);
+      digitalWrite(segmentPins[7], LOW);
+      delay(50);
+    }
+    else if (i == 8)
+    {
+      myservo.write(110);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[0], HIGH);
+      digitalWrite(segmentPins[1], HIGH);
+      digitalWrite(segmentPins[2], HIGH);
+      digitalWrite(segmentPins[3], HIGH);
+      digitalWrite(segmentPins[4], HIGH);
+      digitalWrite(segmentPins[5], HIGH);
+      digitalWrite(segmentPins[6], HIGH);
+      digitalWrite(segmentPins[7], HIGH);
+      delay(35);
+      digitalWrite(segmentPins[0], LOW);
+      digitalWrite(segmentPins[1], LOW);
+      digitalWrite(segmentPins[2], LOW);
+      digitalWrite(segmentPins[3], LOW);
+      digitalWrite(segmentPins[4], LOW);
+      digitalWrite(segmentPins[5], LOW);
+      digitalWrite(segmentPins[6], LOW);
+      digitalWrite(segmentPins[7], LOW);
+      digitalWrite(GREEN_LED, LOW);
+      delay(15);
+    }
+    else if (i == 9)
+    {
+      myservo.write(90);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(segmentPins[0], HIGH);
+      digitalWrite(segmentPins[1], HIGH);
+      digitalWrite(segmentPins[2], HIGH);
+      digitalWrite(segmentPins[3], HIGH);
+      digitalWrite(segmentPins[4], HIGH);
+      digitalWrite(segmentPins[5], HIGH);
+      digitalWrite(segmentPins[6], HIGH);
+      digitalWrite(segmentPins[7], HIGH);
+      delay(35);
+      digitalWrite(segmentPins[0], LOW);
+      digitalWrite(segmentPins[1], LOW);
+      digitalWrite(segmentPins[2], LOW);
+      digitalWrite(segmentPins[3], LOW);
+      digitalWrite(segmentPins[4], LOW);
+      digitalWrite(segmentPins[5], LOW);
+      digitalWrite(segmentPins[6], LOW);
+      digitalWrite(segmentPins[7], LOW);
+      digitalWrite(GREEN_LED, LOW);
+      delay(15);
+    }
+    int pauseTime = duration;
+    delay(pauseTime);
+    noTone(BUZZER);
+  }
+}
+void mazeMessageBeep()
+{
+  const int LEVEL_CLEAR_TEMPO = 150;
+  int creditsMelody[] = {
+      NOTE_C5, NOTE_G4, NOTE_E4, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_G4,
+      NOTE_REST,
+      NOTE_E5, NOTE_C5};
+  int creditsDurations[] = {
+      8, 8, 8, 8, 8, 8, 8,
+      8,
+      4, 2};
+  int notes = sizeof(creditsMelody) / sizeof(creditsMelody[0]);
+  for (int i = 0; i < notes; i++)
+  {
+    long duration = (LEVEL_CLEAR_TEMPO * 4) / creditsDurations[i];
+    if (creditsMelody[i] != NOTE_REST)
+    {
+      tone(BUZZER, creditsMelody[i], duration);
+    }
+    long pauseBetweenNotes = duration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER);
+  }
+}
+void menuBeep()
+{
+  const int PACMAN_TEMPO = 200;
+  int pacmanMelody[] = {
+      NOTE_C4, NOTE_C4, NOTE_G4, NOTE_REST};
+  int pacmanDurations[] = {
+      8, 8, 8, 8,
+      8};
+  int notes = sizeof(pacmanMelody) / sizeof(pacmanMelody[0]);
+  for (int i = 0; i < notes - 1; i++)
+  {
+    int duration = PACMAN_TEMPO / (pacmanDurations[i] / 4);
+    tone(BUZZER, pacmanMelody[i], duration);
+    if (i == 0)
+    {
+      myservo.write(100);
+      digitalWrite(segmentPins[0], HIGH);
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+    }
+    if (i == 1)
+    {
+      myservo.write(80);
+      digitalWrite(segmentPins[6], HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(BLUE_LED, LOW);
+    }
+    if (i == 2)
+    {
+      myservo.write(90);
+      digitalWrite(segmentPins[3], HIGH);
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+      digitalWrite(BLUE_LED, HIGH);
+    }
+    int pauseTime = duration;
+    delay(pauseTime);
+    noTone(BUZZER);
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BLUE_LED, LOW);
+    clearSegments();
+  }
 }
