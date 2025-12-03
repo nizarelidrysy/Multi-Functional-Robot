@@ -1,20 +1,22 @@
 static const int handleCredits_codeLinesCounter_firstLine = __LINE__;
 // Libraries
 // New libraries
-#include <Keypad.h> // "Keypad" by Marl Stanley, Alexander Brevig.
+#include <Keypad.h>            // "Keypad" by Marl Stanley, Alexander Brevig.
 #include <LiquidCrystal_I2C.h> // "LiquidCrystal I2C" by Frank de Brabander.
 // Built-in libraries
 #include <Arduino.h>
 #include <Servo.h>
 #include <Wire.h>
 // Prototype
-extern const int handleCredits_codeLinesCounter_endLine;
-extern const int handleCredits_codeLinesCounter_calculator;
+#define motors_ENA
+#define motors_ENB
+#define potentiometer A13
 // eoPrototype
 // Definitions
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Servo myServo;
 // Function Definitions
+void updateMovementState(String state, bool forceUpdate = false);
 // DC Motors
 void motorsForward();
 void motorsBackward();
@@ -22,9 +24,11 @@ void motorsLeft();
 void motorsRight();
 void motorsStop();
 // Buzzer
-void buzzer_activeBeep(int duration = 100);
+void buzzer_activeBeep(int duration = 120);
 // Ultrasonic Sensor
 long ultrasonicSensor_measureDistance();
+// Reset mode
+void handleReset(int handleReset_delay = 50);
 // Emergency mode
 void handleEmergency();
 void handleEmergency_buzzer_passiveBeep();
@@ -33,7 +37,6 @@ void handleBluetooth();
 // Maze mode
 void handleMaze();
 void handleMaze_motorsTurn(String direction);
-void handleMaze_updateMovementState(String state, bool forceUpdate = false);
 void handleMaze_buzzer_passiveBeep();
 // Morse Communication mode
 void handleMorseCommunication();
@@ -78,10 +81,10 @@ Keypad keypad = Keypad(makeKeymap(keypadKey), keypadRowPin, keypadColumnPin, 4, 
 #define buzzer 49
 #define ultrasonicSensor_trigger 43
 #define ultrasonicSensor_echo 44
-#define motors_In1 50
-#define motors_In2 51
-#define motors_In3 52
-#define motors_In4 53
+#define motors_IN1 50
+#define motors_IN2 51
+#define motors_IN3 52
+#define motors_IN4 53
 #define LED_red 7
 #define LED_green 8
 #define LED_blue 13
@@ -259,6 +262,8 @@ const int MAZE_TURN_LEFT_DURATION = 310;
 const int MAZE_TURN_RIGHT_DURATION = 330;
 const int TEST_ACTION_DURATION = 1000;
 const int LCD_ANIMATION_DELAY = 300;
+extern const int handleCredits_codeLinesCounter_endLine;
+extern const int handleCredits_codeLinesCounter_calculator;
 const unsigned long MAZE_PAUSE_BLINK_INTERVAL = 300;
 const long OBSTACLE_DISTANCE = 15;
 unsigned long lastDistanceUpdateTime = 0;
@@ -313,10 +318,10 @@ void setup()
   pinMode(LED_green, OUTPUT);
   pinMode(LED_blue, OUTPUT);
   pinMode(buzzer, OUTPUT);
-  pinMode(motors_In1, OUTPUT);
-  pinMode(motors_In2, OUTPUT);
-  pinMode(motors_In3, OUTPUT);
-  pinMode(motors_In4, OUTPUT);
+  pinMode(motors_IN1, OUTPUT);
+  pinMode(motors_IN2, OUTPUT);
+  pinMode(motors_IN3, OUTPUT);
+  pinMode(motors_IN4, OUTPUT);
   pinMode(ultrasonicSensor_trigger, OUTPUT);
   pinMode(ultrasonicSensor_echo, INPUT);
   LCD_welcomeMessage();
@@ -348,7 +353,7 @@ void loop()
       else
       {
         lcd.clear();
-        handleMaze_updateMovementState(mazeMovementState, true);
+        updateMovementState(mazeMovementState, true);
         digitalWrite(LED_red, LOW);
       }
     }
@@ -463,7 +468,7 @@ void loop()
       currentMode = MAZE;
       currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
       stateStartTime = millis();
-      handleMaze_updateMovementState("");
+      updateMovementState("");
       currentMode_noneState = NONE_STATE_WAITING;
       delay(300);
       sevenSegment_clearAllSegments();
@@ -479,7 +484,7 @@ void loop()
       currentMode = TESTING;
       currenthandleAutomaticTest_testState = TEST_STATE_INIT;
       testStateStartTime = millis();
-      handleMaze_updateMovementState("Testing: Initializing");
+      updateMovementState("Testing: Initializing");
       sevenSegment_displayDigit(8);
       lcd.clear();
       buzzer_activeBeep();
@@ -505,8 +510,9 @@ void loop()
       buzzer_activeBeep();
       lcd.clear();
       currentMode = MAN_TST;
+      customKey = '5';
       manTstJustEntered = true;
-      handleMaze_updateMovementState("MANUAL TEST READY");
+      updateMovementState("MANUAL TEST READY");
     }
     else if (customKey == '5' || (Serial1.available() && Serial1.peek() == '5'))
     {
@@ -522,7 +528,7 @@ void loop()
         isCreditsActive = true;
         currentCreditMessage = 0;
         lastMessageTime = millis();
-        handleMaze_updateMovementState(" ");
+        updateMovementState(" ");
       }
       else if (currentMode == CREDITS)
       {
@@ -663,447 +669,14 @@ void loop()
       }
     }
   }
-  else if (currentMode == NONE || currentMode == CREDITS)
+  else if (currentMode == NONE)
   {
     sevenSegment_animation();
     LCD_menuMessage_animation();
   }
 }
 // Functions Definitions
-// DC Motors
-void motorsForward()
-{
-  digitalWrite(motors_In1, HIGH);
-  digitalWrite(motors_In2, LOW);
-  digitalWrite(motors_In3, LOW);
-  digitalWrite(motors_In4, HIGH);
-}
-void motorsBackward()
-{
-  digitalWrite(motors_In1, LOW);
-  digitalWrite(motors_In2, HIGH);
-  digitalWrite(motors_In3, HIGH);
-  digitalWrite(motors_In4, LOW);
-}
-void motorsLeft()
-{
-  digitalWrite(motors_In1, HIGH);
-  digitalWrite(motors_In2, LOW);
-  digitalWrite(motors_In3, HIGH);
-  digitalWrite(motors_In4, LOW);
-}
-void motorsRight()
-{
-  digitalWrite(motors_In1, LOW);
-  digitalWrite(motors_In2, HIGH);
-  digitalWrite(motors_In3, LOW);
-  digitalWrite(motors_In4, HIGH);
-}
-void motorsStop()
-{
-  digitalWrite(motors_In1, LOW);
-  digitalWrite(motors_In2, LOW);
-  digitalWrite(motors_In3, LOW);
-  digitalWrite(motors_In4, LOW);
-}
-// Buzzer
-void buzzer_activeBeep(int duration)
-{
-  tone(buzzer, NOTE_C5, 100);
-  delay(120);
-  noTone(buzzer);
-}
-// Ultrasonic Sensor
-long ultrasonicSensor_measureDistance()
-{
-  digitalWrite(ultrasonicSensor_trigger, LOW);
-  delayMicroseconds(2);
-  digitalWrite(ultrasonicSensor_trigger, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(ultrasonicSensor_trigger, LOW);
-  long duration = pulseIn(ultrasonicSensor_echo, HIGH, 25000);
-  long distance = duration * 0.0343 / 2;
-  return distance;
-}
-// Emergency mode
-void handleEmergency()
-{
-  char customKey = '^^';
-  ensureSingleModeAccess = 1;
-  Serial.println(" -- EMERGENCY MODE TRIGGERED !");
-  Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
-  motorsStop();
-  isMazePaused = false;
-  myServo.write(90);
-  servoPos = 90;
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(" EMERGENCY MODE");
-  lcd.setCursor(0, 1);
-  lcd.print(" TRIGGERED !!!!");
-  sevenSegment_clearAllSegments();
-  digitalWrite(LED_green, LOW);
-  digitalWrite(LED_red, LOW);
-  digitalWrite(LED_blue, LOW);
-  for (int i = 0; i < 7; i++)
-  {
-    sevenSegment_displayLetter('E');
-    digitalWrite(LED_red, HIGH);
-    digitalWrite(LED_green, LOW);
-    digitalWrite(LED_blue, LOW);
-    handleEmergency_buzzer_passiveBeep();
-    sevenSegment_clearAllSegments();
-    digitalWrite(LED_red, LOW);
-    delay(50);
-  }
-  delay(1000);
-}
-void handleEmergency_buzzer_passiveBeep()
-{
-  tone(buzzer, NOTE_C6, 100);
-  delay(70);
-  noTone(buzzer);
-}
-// Bluetooth mode
-void handleBluetooth()
-{
-  static bool isForwardToggled = false;
-  static bool isBackwardToggled = false;
-  static bool isLeftToggled = false;
-  static bool isRightToggled = false;
-  static String lastNonMovementState = "";
-  static unsigned long lastLedHoverUpdateTime = 0;
-  static int ledHoverBrightness = 0;
-  static int ledHoverFadeAmount = 60;
-  const unsigned long LED_HOVER_INTERVAL_BT = 1;
-  static unsigned long lastWhiteLedHoverUpdateTime = 0;
-  static int whiteLedHoverBrightness = 100;
-  static int whiteLedHoverFadeAmount = 60;
-  const unsigned long WHITE_LED_HOVER_INTERVAL_BT = 10000;
-  auto resetMovementToggles = [&]()
-  {
-    isForwardToggled = false;
-    isBackwardToggled = false;
-    isLeftToggled = false;
-    isRightToggled = false;
-    motorsStop();
-    analogWrite(LED_blue, LOW);
-    ledHoverBrightness = 0;
-    ledHoverFadeAmount = abs(ledHoverFadeAmount);
-    lastNonMovementState = "";
-  };
-  if (btModeJustEntered)
-  {
-    resetMovementToggles();
-    lcd.setCursor(0, 1);
-    lcd.print("                ");
-    handleMaze_updateMovementState("Idle", true);
-    btModeJustEntered = false;
-  }
-  char command = 0;
-  while (Serial1.available())
-  {
-    command = Serial1.read();
-  }
-  if (command != 0 && command != '\n' && command != '\r')
-  {
-    if (command == 'Z' || command == 'S' || command == 'Q' || command == 'D' || command == ' ' || command == 'X')
-    {
-      lastNonMovementState = "";
-    }
-    switch (command)
-    {
-    case 'Z':
-      if (isForwardToggled)
-      {
-        resetMovementToggles();
-      }
-      else
-      {
-        resetMovementToggles();
-        isForwardToggled = true;
-        motorsForward();
-        handleMaze_updateMovementState("Forward");
-      }
-      break;
-    case 'S':
-      if (isBackwardToggled || isForwardToggled)
-      {
-        resetMovementToggles();
-      }
-      else
-      {
-        motorsBackward();
-        isBackwardToggled = true;
-        motorsBackward();
-        handleMaze_updateMovementState("Backward");
-      }
-      break;
-    case 'Q':
-      if (isLeftToggled)
-      {
-        resetMovementToggles();
-      }
-      else
-      {
-        resetMovementToggles();
-        isLeftToggled = true;
-        motorsLeft();
-        handleMaze_updateMovementState("Left");
-      }
-      break;
-    case 'D':
-      if (isRightToggled)
-      {
-        resetMovementToggles();
-      }
-      else
-      {
-        resetMovementToggles();
-        isRightToggled = true;
-        motorsRight();
-        handleMaze_updateMovementState("Right");
-      }
-      break;
-    case ' ':
-      resetMovementToggles();
-      handleMaze_updateMovementState("Idle", true);
-      break;
-    case 'M':
-      myServo.write(0);
-      servoPos = 0;
-      lastNonMovementState = "Servo RIGHT";
-      handleMaze_updateMovementState(lastNonMovementState);
-      break;
-    case 'K':
-      myServo.write(180);
-      servoPos = 180;
-      lastNonMovementState = "Servo LEFT";
-      handleMaze_updateMovementState(lastNonMovementState);
-      break;
-    case 'O':
-    case 'L':
-      myServo.write(90);
-      servoPos = 90;
-      lastNonMovementState = "Servo Middle";
-      handleMaze_updateMovementState(lastNonMovementState);
-      break;
-    case 'I':
-      myServo.write(135);
-      servoPos = 135;
-      lastNonMovementState = "Servo left";
-      handleMaze_updateMovementState(lastNonMovementState);
-      break;
-    case 'P':
-      myServo.write(45);
-      servoPos = 45;
-      lastNonMovementState = "Servo right";
-      handleMaze_updateMovementState(lastNonMovementState);
-      break;
-    case 'B':
-      buzzerEnabled = !buzzerEnabled;
-      if (buzzerEnabled)
-      {
-        tone(buzzer, NOTE_A4);
-        lastNonMovementState = "buzzer: ON";
-        handleMaze_updateMovementState(lastNonMovementState);
-      }
-      else
-      {
-        noTone(buzzer);
-        lastNonMovementState = "buzzer: OFF";
-        handleMaze_updateMovementState(lastNonMovementState);
-      }
-      break;
-    case 'X':
-      handleEmergency();
-      LCD_menuMessage();
-      return;
-    }
-  }
-  if (isForwardToggled)
-  {
-    motorsForward();
-    handleMaze_updateMovementState("Motors Forward");
-    analogWrite(LED_blue, LOW);
-  }
-  else if (isBackwardToggled)
-  {
-    motorsBackward();
-    handleMaze_updateMovementState("Motors Backward");
-    analogWrite(LED_blue, LOW);
-  }
-  else if (isLeftToggled)
-  {
-    motorsLeft();
-    handleMaze_updateMovementState("Motors Left");
-    if (millis() - lastLedHoverUpdateTime >= LED_HOVER_INTERVAL_BT)
-    {
-      lastLedHoverUpdateTime = millis();
-      ledHoverBrightness += ledHoverFadeAmount;
-      if (ledHoverBrightness <= 0 || ledHoverBrightness >= 255)
-      {
-        ledHoverFadeAmount = -ledHoverFadeAmount;
-        ledHoverBrightness = constrain(ledHoverBrightness, 0, 255);
-      }
-    }
-  }
-  else if (isRightToggled)
-  {
-    motorsRight();
-    handleMaze_updateMovementState("Motors Right");
-  }
-  else
-  {
-    motorsStop();
-    if (lastNonMovementState != "")
-    {
-      handleMaze_updateMovementState(lastNonMovementState);
-    }
-    else
-    {
-      handleMaze_updateMovementState("Motors Idle");
-    }
-  }
-}
-// Maze mode
-void handleMaze()
-{
-  if (ensureSingleModeAccess == 1)
-  {
-    ensureSingleModeAccess = 0;
-    Serial.println(" -- MAZE MODE TRIGGERED !");
-    Serial1.println(" -- MAZE MODE TRIGGERED !");
-  }
-  static unsigned long lastSegmentBlinkTime = 0;
-  static bool showSegmentDigit = true;
-  static unsigned long lastBeepTimeMoving = 0;
-  digitalWrite(LED_blue, LOW);
-  if (millis() - lastSegmentBlinkTime >= 300)
-  {
-    lastSegmentBlinkTime = millis();
-    showSegmentDigit = !showSegmentDigit;
-    if (showSegmentDigit)
-    {
-      sevenSegment_displayDigit(2);
-    }
-    else
-    {
-      sevenSegment_clearAllSegments();
-    }
-  }
-  lcd.setCursor(0, 0);
-  lcd.print("Distance : ");
-  long currentDistance = ultrasonicSensor_measureDistance();
-  if (currentDistance < 10)
-    lcd.print("0");
-  if (currentDistance < 100)
-    lcd.print(currentDistance);
-  else
-    lcd.print("99");
-  lcd.print(" cm      ");
-  switch (currenthandleMaze_mazeState)
-  {
-  case MAZE_STATE_MOVING_FORWARD:
-    motorsForward();
-    handleMaze_updateMovementState("Forward...");
-    if (millis() - lastBeepTimeMoving >= 800)
-    {
-      lastBeepTimeMoving = millis();
-      buzzer_activeBeep(50);
-    }
-    if (ultrasonicSensor_measureDistance() <= OBSTACLE_DISTANCE)
-    {
-      currenthandleMaze_mazeState = MAZE_STATE_OBSTACLE_DETECTED;
-      stateStartTime = millis();
-      motorsStop();
-      handleMaze_updateMovementState("Obstacle!!!!");
-      for (int m = 0; m < 5; m++)
-      {
-        tone(buzzer, NOTE_B3);
-        delay(100);
-        noTone(buzzer);
-      }
-      delay(1000);
-    }
-    break;
-  case MAZE_STATE_OBSTACLE_DETECTED:
-    currenthandleMaze_mazeState = MAZE_STATE_SCANNING;
-    stateStartTime = millis();
-    break;
-  case MAZE_STATE_SCANNING:
-    handleMaze_updateMovementState("Scanning...");
-    myServo.write(0);
-    delay(300);
-    distRight = ultrasonicSensor_measureDistance();
-    Serial.print("Right: ");
-    Serial.println(distRight);
-    myServo.write(180);
-    delay(300);
-    distLeft = ultrasonicSensor_measureDistance();
-    Serial.print("Left: ");
-    Serial.println(distLeft);
-    myServo.write(90);
-    delay(100);
-    if (distRight > TURN_CLEARANCE_DISTANCE)
-    {
-      currenthandleMaze_mazeState = MAZE_STATE_TURNING_RIGHT;
-    }
-    else if (distLeft > TURN_CLEARANCE_DISTANCE)
-    {
-      currenthandleMaze_mazeState = MAZE_STATE_TURNING_LEFT;
-    }
-    else
-    {
-      currenthandleMaze_mazeState = MAZE_STATE_TURNING_AROUND;
-    }
-    stateStartTime = millis();
-    break;
-  case MAZE_STATE_TURNING_LEFT:
-    tone(buzzer, NOTE_C7);
-    handleMaze_updateMovementState("Turning Left");
-    handleMaze_motorsTurn("left");
-    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
-    stateStartTime = millis();
-    break;
-  case MAZE_STATE_TURNING_RIGHT:
-    tone(buzzer, NOTE_C7);
-    handleMaze_updateMovementState("Turning Right");
-    handleMaze_motorsTurn("right");
-    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
-    stateStartTime = millis();
-    break;
-  case MAZE_STATE_TURNING_AROUND:
-    tone(buzzer, NOTE_C7);
-    handleMaze_updateMovementState("Turning Around");
-    handleMaze_motorsTurn("around");
-    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
-    stateStartTime = millis();
-    break;
-  }
-  noTone(buzzer);
-}
-void handleMaze_motorsTurn(String direction)
-{
-  if (direction == "left")
-  {
-    motorsLeft();
-    delay(MAZE_TURN_LEFT_DURATION);
-  }
-  else if (direction == "right")
-  {
-    motorsRight();
-    delay(MAZE_TURN_RIGHT_DURATION);
-  }
-  else if (direction == "around")
-  {
-    motorsLeft();
-    delay(MAZE_TURN_LEFT_DURATION * 2);
-  }
-  motorsStop();
-  delay(100);
-}
-void handleMaze_updateMovementState(String state, bool forceUpdate = false)
+void updateMovementState(String state, bool forceUpdate = false)
 {
   if (isMazePaused)
   {
@@ -1155,6 +728,442 @@ void handleMaze_updateMovementState(String state, bool forceUpdate = false)
       digitalWrite(LED_blue, LOW);
     }
   }
+}
+// DC Motors - Verified
+void motorsForward()
+{
+  digitalWrite(motors_IN1, HIGH);
+  digitalWrite(motors_IN2, LOW);
+  digitalWrite(motors_IN3, LOW);
+  digitalWrite(motors_IN4, HIGH);
+}
+void motorsBackward()
+{
+  digitalWrite(motors_IN1, LOW);
+  digitalWrite(motors_IN2, HIGH);
+  digitalWrite(motors_IN3, HIGH);
+  digitalWrite(motors_IN4, LOW);
+}
+void motorsLeft()
+{
+  digitalWrite(motors_IN1, HIGH);
+  digitalWrite(motors_IN2, LOW);
+  digitalWrite(motors_IN3, HIGH);
+  digitalWrite(motors_IN4, LOW);
+}
+void motorsRight()
+{
+  digitalWrite(motors_IN1, LOW);
+  digitalWrite(motors_IN2, HIGH);
+  digitalWrite(motors_IN3, LOW);
+  digitalWrite(motors_IN4, HIGH);
+}
+void motorsStop()
+{
+  digitalWrite(motors_IN1, LOW);
+  digitalWrite(motors_IN2, LOW);
+  digitalWrite(motors_IN3, LOW);
+  digitalWrite(motors_IN4, LOW);
+}
+// Buzzer - Verified
+void buzzer_activeBeep(int duration)
+{
+  tone(buzzer, NOTE_C5, 100);
+  delay(duration);
+  noTone(buzzer);
+}
+// Ultrasonic Sensor - Verified
+long ultrasonicSensor_measureDistance()
+{
+  digitalWrite(ultrasonicSensor_trigger, LOW);
+  delayMicroseconds(2);
+  digitalWrite(ultrasonicSensor_trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ultrasonicSensor_trigger, LOW);
+  long duration = pulseIn(ultrasonicSensor_echo, HIGH, 25000);
+  long distance = duration * 0.0343 / 2;
+  return distance;
+}
+// Reset mode - Verified
+void handleReset(int handleReset_delay)
+{
+  servoPos = 90;
+  isMazePaused = false;
+  ensureSingleModeAccess = 1;
+  lcd.clear();
+  motorsStop();
+  myServo.write(90);
+  noTone(buzzer);
+  sevenSegment_clearAllSegments();
+  digitalWrite(LED_red, LOW);
+  digitalWrite(LED_green, LOW);
+  digitalWrite(LED_blue, LOW);
+  delay(handleReset_delay);
+}
+// Emergency mode - Verified
+void handleEmergency()
+{
+  motorsStop();
+  myServo.write(90);
+  sevenSegment_clearAllSegments();
+  digitalWrite(LED_red, LOW);
+  digitalWrite(LED_green, LOW);
+  digitalWrite(LED_blue, LOW);
+  servoPos = 90;
+  isMazePaused = false;
+  ensureSingleModeAccess = 1;
+  Serial.println(" -- EMERGENCY MODE TRIGGERED !");
+  Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(" EMERGENCY MODE");
+  lcd.setCursor(0, 1);
+  lcd.print(" TRIGGERED !!!!");
+  for (int i = 0; i < 7; i++)
+  {
+    sevenSegment_displayLetter('E');
+    digitalWrite(LED_red, HIGH);
+    handleEmergency_buzzer_passiveBeep();
+    sevenSegment_clearAllSegments();
+    digitalWrite(LED_red, LOW);
+    delay(50);
+  }
+  delay(1000);
+}
+void handleEmergency_buzzer_passiveBeep()
+{
+  tone(buzzer, NOTE_C6, 100);
+  delay(70);
+  noTone(buzzer);
+}
+// Bluetooth mode - Verified
+void handleBluetooth()
+{
+  static bool isForwardToggled = false;
+  static bool isBackwardToggled = false;
+  static bool isLeftToggled = false;
+  static bool isRightToggled = false;
+  static bool isServoToggled = false;
+  static String lastNonMovementState = "";
+  auto resetMotorsToggle = [&]()
+  {
+    isForwardToggled = false;
+    isBackwardToggled = false;
+    isLeftToggled = false;
+    isRightToggled = false;
+    motorsStop();
+    lastNonMovementState = "";
+  };
+  if (btModeJustEntered)
+  {
+    resetMotorsToggle();
+    lcd.clear();
+    updateMovementState("Waiting for inpt", true);
+    btModeJustEntered = false;
+  }
+  char keyboardPress = 0;
+  while (Serial1.available())
+  {
+    keyboardPress = Serial1.read();
+  }
+  if (keyboardPress != 0 && keyboardPress != '\n' && keyboardPress != '\r')
+  {
+    switch (keyboardPress)
+    {
+    // DC Motors
+    case 'Z':
+      if (isForwardToggled)
+      {
+        resetMotorsToggle();
+      }
+      else
+      {
+        resetMotorsToggle();
+        isForwardToggled = true;
+        motorsForward();
+        updateMovementState("Motors Forward");
+        lastNonMovementState = "Motors Forward";
+      }
+      break;
+    case 'S':
+      if (isBackwardToggled)
+      {
+        resetMotorsToggle();
+      }
+      else
+      {
+        motorsBackward();
+        isBackwardToggled = true;
+        motorsBackward();
+        updateMovementState("Motors Backward");
+        lastNonMovementState = "Motors Backward";
+      }
+      break;
+    case 'Q':
+      if (isLeftToggled)
+      {
+        resetMotorsToggle();
+      }
+      else
+      {
+        resetMotorsToggle();
+        isLeftToggled = true;
+        motorsLeft();
+        updateMovementState("Motors Left");
+        lastNonMovementState = "Motors Left";
+      }
+      break;
+    case 'D':
+      if (isRightToggled)
+      {
+        resetMotorsToggle();
+      }
+      else
+      {
+        resetMotorsToggle();
+        isRightToggled = true;
+        motorsRight();
+        updateMovementState("Motors Right");
+        lastNonMovementState = "Motors Right";
+      }
+      break;
+    case ' ':
+      resetMotorsToggle();
+      updateMovementState("Motors Idle");
+      lastNonMovementState = "Motors Idle";
+      break;
+    // Servo Motor
+    case 'M':
+      if (isServoToggled)
+      {
+        myServo.write(90);
+        servoPos = 90;
+        updateMovementState("Servo MIDDLE");
+        lastNonMovementState = "Servo MIDDLE";
+      }
+      else
+      {
+        myServo.write(0);
+        servoPos = 0;
+        updateMovementState("Servo RIGHT");
+        lastNonMovementState = "Servo RIGHT";
+      }
+      break;
+    case 'K':
+      if (isServoToggled)
+      {
+        myServo.write(90);
+        servoPos = 90;
+        updateMovementState("Servo MIDDLE");
+        lastNonMovementState = "Servo MIDDLE";
+      }
+      else
+      {
+        myServo.write(180);
+        servoPos = 180;
+        updateMovementState("Servo LEFT");
+        lastNonMovementState = "Servo LEFT";
+      }
+      break;
+    case 'O':
+    case 'L':
+      myServo.write(90);
+      servoPos = 90;
+      updateMovementState("Servo MIDDLE");
+      lastNonMovementState = "Servo MIDDLE";
+      break;
+    case 'I':
+      if (isServoToggled)
+      {
+        myServo.write(90);
+        servoPos = 90;
+        updateMovementState("Servo MIDDLE");
+        lastNonMovementState = "Servo MIDDLE";
+      }
+      else
+      {
+        myServo.write(135);
+        servoPos = 135;
+        updateMovementState("Servo left");
+        lastNonMovementState = "Servo left";
+      }
+      break;
+    case 'P':
+      if (isServoToggled)
+      {
+        myServo.write(90);
+        servoPos = 90;
+        updateMovementState("Servo MIDDLE");
+        lastNonMovementState = "Servo MIDDLE";
+      }
+      else
+      {
+        myServo.write(45);
+        servoPos = 45;
+        updateMovementState("Servo right");
+        lastNonMovementState = "Servo right";
+      }
+      break;
+    // Buzzer
+    case 'B':
+      buzzerEnabled = !buzzerEnabled;
+      if (buzzerEnabled)
+      {
+        tone(buzzer, NOTE_A4);
+        updateMovementState("Buzzer ON");
+        lastNonMovementState = "Buzzer ON";
+      }
+      else
+      {
+        noTone(buzzer);
+        updateMovementState("Buzzer OFF");
+        lastNonMovementState = "Buzzer OFF";
+      }
+      break;
+    // Emergency mode
+    case 'X':
+      handleEmergency();
+      LCD_menuMessage();
+      return;
+    }
+  }
+}
+// Maze mode
+void handleMaze()
+{
+  if (ensureSingleModeAccess == 1)
+  {
+    ensureSingleModeAccess = 0;
+    Serial.println(" -- MAZE MODE TRIGGERED !");
+    Serial1.println(" -- MAZE MODE TRIGGERED !");
+  }
+  static unsigned long lastSegmentBlinkTime = 0;
+  static bool showSegmentDigit = true;
+  static unsigned long lastBeepTimeMoving = 0;
+  digitalWrite(LED_blue, LOW);
+  if (millis() - lastSegmentBlinkTime >= 300)
+  {
+    lastSegmentBlinkTime = millis();
+    showSegmentDigit = !showSegmentDigit;
+    if (showSegmentDigit)
+    {
+      sevenSegment_displayDigit(2);
+    }
+    else
+    {
+      sevenSegment_clearAllSegments();
+    }
+  }
+  lcd.setCursor(0, 0);
+  lcd.print("Distance : ");
+  long currentDistance = ultrasonicSensor_measureDistance();
+  if (currentDistance < 10)
+    lcd.print("0");
+  if (currentDistance < 100)
+    lcd.print(currentDistance);
+  else
+    lcd.print("99");
+  lcd.print(" cm      ");
+  switch (currenthandleMaze_mazeState)
+  {
+  case MAZE_STATE_MOVING_FORWARD:
+    motorsForward();
+    updateMovementState("Forward...");
+    if (millis() - lastBeepTimeMoving >= 800)
+    {
+      lastBeepTimeMoving = millis();
+      buzzer_activeBeep(50);
+    }
+    if (ultrasonicSensor_measureDistance() <= OBSTACLE_DISTANCE)
+    {
+      currenthandleMaze_mazeState = MAZE_STATE_OBSTACLE_DETECTED;
+      stateStartTime = millis();
+      motorsStop();
+      updateMovementState("Obstacle!!!!");
+      for (int m = 0; m < 5; m++)
+      {
+        tone(buzzer, NOTE_B3);
+        delay(100);
+        noTone(buzzer);
+      }
+      delay(1000);
+    }
+    break;
+  case MAZE_STATE_OBSTACLE_DETECTED:
+    currenthandleMaze_mazeState = MAZE_STATE_SCANNING;
+    stateStartTime = millis();
+    break;
+  case MAZE_STATE_SCANNING:
+    updateMovementState("Scanning...");
+    myServo.write(0);
+    delay(300);
+    distRight = ultrasonicSensor_measureDistance();
+    Serial.print("Right: ");
+    Serial.println(distRight);
+    myServo.write(180);
+    delay(300);
+    distLeft = ultrasonicSensor_measureDistance();
+    Serial.print("Left: ");
+    Serial.println(distLeft);
+    myServo.write(90);
+    delay(100);
+    if (distRight > TURN_CLEARANCE_DISTANCE)
+    {
+      currenthandleMaze_mazeState = MAZE_STATE_TURNING_RIGHT;
+    }
+    else if (distLeft > TURN_CLEARANCE_DISTANCE)
+    {
+      currenthandleMaze_mazeState = MAZE_STATE_TURNING_LEFT;
+    }
+    else
+    {
+      currenthandleMaze_mazeState = MAZE_STATE_TURNING_AROUND;
+    }
+    stateStartTime = millis();
+    break;
+  case MAZE_STATE_TURNING_LEFT:
+    tone(buzzer, NOTE_C7);
+    updateMovementState("Turning Left");
+    handleMaze_motorsTurn("left");
+    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
+    stateStartTime = millis();
+    break;
+  case MAZE_STATE_TURNING_RIGHT:
+    tone(buzzer, NOTE_C7);
+    updateMovementState("Turning Right");
+    handleMaze_motorsTurn("right");
+    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
+    stateStartTime = millis();
+    break;
+  case MAZE_STATE_TURNING_AROUND:
+    tone(buzzer, NOTE_C7);
+    updateMovementState("Turning Around");
+    handleMaze_motorsTurn("around");
+    currenthandleMaze_mazeState = MAZE_STATE_MOVING_FORWARD;
+    stateStartTime = millis();
+    break;
+  }
+  noTone(buzzer);
+}
+void handleMaze_motorsTurn(String direction)
+{
+  if (direction == "left")
+  {
+    motorsLeft();
+    delay(MAZE_TURN_LEFT_DURATION);
+  }
+  else if (direction == "right")
+  {
+    motorsRight();
+    delay(MAZE_TURN_RIGHT_DURATION);
+  }
+  else if (direction == "around")
+  {
+    motorsLeft();
+    delay(MAZE_TURN_LEFT_DURATION * 2);
+  }
+  motorsStop();
+  delay(100);
 }
 void handleMaze_buzzer_passiveBeep()
 {
@@ -1226,13 +1235,13 @@ void handleMorseCommunication()
     lcd.setCursor(0, 1);
     lcd.print("~");
   }
-  char command = 0;
+  char keyboardPress = 0;
   while (Serial1.available())
   {
-    command = Serial1.read();
+    keyboardPress = Serial1.read();
     char receivedChar = Serial1.read();
-    Serial.println(command);
-    switch (command)
+    Serial.println(keyboardPress);
+    switch (keyboardPress)
     {
     case 'A':
       handleMorseCommunication_character('A');
@@ -2346,48 +2355,48 @@ void handleManualTest(char customKey)
     if (customKey == '8')
     {
       motorsForward();
-      handleMaze_updateMovementState(" MOTORS FORWARD");
+      updateMovementState(" MOTORS FORWARD");
     }
     else if (customKey == '4')
     {
       motorsRight();
-      handleMaze_updateMovementState("MOTORS RIGHT");
+      updateMovementState("MOTORS RIGHT");
     }
     else if (customKey == '6')
     {
       motorsLeft();
-      handleMaze_updateMovementState("MOTORS LEFT");
+      updateMovementState("MOTORS LEFT");
     }
     else if (customKey == '2')
     {
       motorsBackward();
-      handleMaze_updateMovementState("MOTORS BACKWARD");
+      updateMovementState("MOTORS BACKWARD");
     }
     else if (customKey == '5')
     {
       motorsStop();
-      handleMaze_updateMovementState("ROBOT IDLE");
+      updateMovementState("ROBOT IDLE");
     }
     else if (customKey == 'A')
     {
       digitalWrite(LED_red, HIGH);
       digitalWrite(LED_green, LOW);
       digitalWrite(LED_blue, LOW);
-      handleMaze_updateMovementState("RED LED: ON");
+      updateMovementState("RED LED: ON");
     }
     else if (customKey == 'B')
     {
       digitalWrite(LED_red, LOW);
       digitalWrite(LED_green, HIGH);
       digitalWrite(LED_blue, LOW);
-      handleMaze_updateMovementState(" GREEN LED: ON");
+      updateMovementState(" GREEN LED: ON");
     }
     else if (customKey == 'C')
     {
       digitalWrite(LED_red, LOW);
       digitalWrite(LED_green, LOW);
       digitalWrite(LED_blue, HIGH);
-      handleMaze_updateMovementState("BLUE LED: ON");
+      updateMovementState("BLUE LED: ON");
     }
     if (customKey == '9')
     {
@@ -2408,35 +2417,31 @@ void handleManualTest(char customKey)
         lcd.print("   7-SEG: OFF      ");
       }
     }
-    unsigned long actionEndTime = millis();
-    while (millis() - actionEndTime < 50)
-    {
-    }
   }
   if (customKey == '0' || analogRead(joystick_VRY) > 950 || analogRead(joystick_VRY) < 150)
   {
     myServo.write(90);
-    handleMaze_updateMovementState("SERVO CENTERED");
+    updateMovementState("SERVO CENTERED");
   }
   else if (customKey == '*' || analogRead(joystick_VRX) > 950)
   {
     myServo.write(0);
-    handleMaze_updateMovementState("SERVO RIGHT");
+    updateMovementState("SERVO RIGHT");
   }
   else if (customKey == '#' || analogRead(joystick_VRX) < 150)
   {
     myServo.write(180);
-    handleMaze_updateMovementState("SERVO LEFT");
+    updateMovementState("SERVO LEFT");
   }
   else if (customKey == '3')
   {
     myServo.write(135);
-    handleMaze_updateMovementState("SERVO left");
+    updateMovementState("SERVO left");
   }
   else if (customKey == '1')
   {
     myServo.write(45);
-    handleMaze_updateMovementState("SERVO right");
+    updateMovementState("SERVO right");
   }
   if (customKey == '7' || digitalRead(joystick_button) == LOW)
   {
@@ -2510,14 +2515,14 @@ void handleAutomaticTest()
   case TEST_STATE_INIT:
     motorsStop();
     myServo.write(90);
-    handleMaze_updateMovementState("Testing...");
+    updateMovementState("Testing...");
     currenthandleAutomaticTest_testState = TEST_STATE_FORWARD;
     testStateStartTime = millis();
     break;
   case TEST_STATE_FORWARD:
     motorsForward();
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Forward");
+      updateMovementState("Forward");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       motorsStop();
@@ -2528,7 +2533,7 @@ void handleAutomaticTest()
   case TEST_STATE_BACKWARD:
     motorsBackward();
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Backward");
+      updateMovementState("Backward");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       motorsStop();
@@ -2539,7 +2544,7 @@ void handleAutomaticTest()
   case TEST_STATE_TURN_LEFT:
     motorsLeft();
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Left");
+      updateMovementState("Left");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       motorsStop();
@@ -2550,7 +2555,7 @@ void handleAutomaticTest()
   case TEST_STATE_TURN_RIGHT:
     motorsRight();
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Right");
+      updateMovementState("Right");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       motorsStop();
@@ -2561,7 +2566,7 @@ void handleAutomaticTest()
   case TEST_STATE_SERVO_LEFT:
     myServo.write(0);
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Servo Left");
+      updateMovementState("Servo Left");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       currenthandleAutomaticTest_testState = TEST_STATE_SERVO_CENTER;
@@ -2571,7 +2576,7 @@ void handleAutomaticTest()
   case TEST_STATE_SERVO_CENTER:
     myServo.write(90);
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Servo Centered");
+      updateMovementState("Servo Centered");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       currenthandleAutomaticTest_testState = TEST_STATE_SERVO_RIGHT;
@@ -2581,7 +2586,7 @@ void handleAutomaticTest()
   case TEST_STATE_SERVO_RIGHT:
     myServo.write(180);
     if (millis() - testStateStartTime == 0)
-      handleMaze_updateMovementState("Servo Right");
+      updateMovementState("Servo Right");
     if (millis() - testStateStartTime >= TEST_ACTION_DURATION)
     {
       currenthandleAutomaticTest_testState = TEST_STATE_CYCLE_COMPLETE;
@@ -2594,7 +2599,7 @@ void handleAutomaticTest()
     digitalWrite(LED_red, LOW);
     digitalWrite(LED_green, LOW);
     digitalWrite(LED_blue, LOW);
-    handleMaze_updateMovementState("Test Finished.");
+    updateMovementState("Test Finished.");
     tone(buzzer, NOTE_C3);
     currenthandleAutomaticTest_testState = TEST_STATE_INIT;
     testStateStartTime = millis();
@@ -2674,32 +2679,42 @@ void LCD_displayMessageCentered(String msg, int row)
 }
 void LCD_welcomeMessage()
 {
-  Serial.println(" -- Reseting everything");
-  Serial1.println(" -- Reseting everything");
-  motorsStop();
-  myServo.write(90);
-  servoPos = 90;
+  LCD_displayMessageCentered("Resetting all", 0);
+  LCD_displayMessageCentered("Components...", 1);
+  Serial.println(" -- Resetting all components...");
+  Serial1.println(" -- Resetting all components...");
+  delay(1500);
+  handleReset();
   lcd.clear();
-  LCD_displayMessageCentered("Reseting all", 0);
-  LCD_displayMessageCentered("Components..", 1);
-  sevenSegment_clearAllSegments();
-  digitalWrite(LED_green, LOW);
-  digitalWrite(LED_red, LOW);
-  digitalWrite(LED_blue, LOW);
-  delay(1100);
-  Serial.println(" -- Hello! I'm DAMI 3000!");
-  Serial1.println(" -- Hello! I'm DAMI 3000!");
-  lcd.clear();
-  LCD_displayMessageCentered("Hello!", 0);
-  LCD_displayMessageCentered("I'm DAMI 3000!", 1);
-  LCD_welcomeMessage_buzzer_passiveBeep();
-  delay(100);
-  digitalWrite(LED_red, LOW);
-  digitalWrite(LED_green, LOW);
-  digitalWrite(LED_blue, LOW);
-  digitalWrite(sevenSegmentPin[6], LOW);
-  delay(50);
-  delay(1000);
+  LCD_displayMessageCentered("Click Joystick", 0);
+  LCD_displayMessageCentered("to start !", 1);
+  Serial.println(" -- Click Joystick to start !");
+  Serial1.println(" -- Click Joystick to start !");
+  bool readJostickClick = false;
+  if (digitalRead(joystick_button) == HIGH)
+  {
+    readJostickClick = true;
+  }
+  while (readJostickClick)
+  {
+    if (digitalRead(joystick_button) == LOW)
+    {
+      Serial.println(" -- Hello! I'm DAMI 3000!");
+      Serial1.println(" -- Hello! I'm DAMI 3000!");
+      lcd.clear();
+      LCD_displayMessageCentered("Hello!", 0);
+      LCD_displayMessageCentered("I'm DAMI 3000!", 1);
+      LCD_welcomeMessage_buzzer_passiveBeep();
+      delay(100);
+      digitalWrite(LED_red, LOW);
+      digitalWrite(LED_green, LOW);
+      digitalWrite(LED_blue, LOW);
+      digitalWrite(sevenSegmentPin[6], LOW);
+      delay(50);
+      delay(1000);
+      break;
+    }
+  }
 }
 void LCD_welcomeMessage_buzzer_passiveBeep()
 {
