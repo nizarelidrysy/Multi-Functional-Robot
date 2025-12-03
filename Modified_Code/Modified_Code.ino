@@ -1,8 +1,10 @@
 static const int handleCredits_codeLinesCounter_firstLine = __LINE__;
 // Libraries
+// New libraries
+#include <Keypad.h> // "Keypad" by Marl Stanley, Alexander Brevig.
+#include <LiquidCrystal_I2C.h> // "LiquidCrystal I2C" by Frank de Brabander.
+// Built-in libraries
 #include <Arduino.h>
-#include <Keypad.h>
-#include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 #include <Wire.h>
 // Prototype
