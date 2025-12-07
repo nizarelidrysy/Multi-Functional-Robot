@@ -870,7 +870,7 @@ void handleBluetooth()
   if (btModeJustEntered)
   {
     resetMotorsToggle();
-    lcd.clear();
+    handleReset();
     updateMovementState("Waiting for inpt", true);
     btModeJustEntered = false;
   }
