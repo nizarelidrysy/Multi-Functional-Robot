@@ -8,9 +8,6 @@ static const int handleCredits_codeLinesCounter_firstLine = __LINE__;
 #include <Servo.h>
 #include <Wire.h>
 // Prototype
-#define motors_ENA
-#define motors_ENB
-#define potentiometer A13
 // eoPrototype
 // Definitions
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -18,6 +15,7 @@ Servo myServo;
 // Function Definitions
 void updateMovementState(String state, bool forceUpdate = false);
 // DC Motors
+void motorsSpeed();
 void motorsForward();
 void motorsBackward();
 void motorsLeft();
@@ -78,6 +76,8 @@ char keypadKey[4][4] = {
     {'*', '0', '#', 'D'}};
 Keypad keypad = Keypad(makeKeymap(keypadKey), keypadRowPin, keypadColumnPin, 4, 4);
 #define servoMotor 4
+#define motors_ENA 10
+#define motors_ENB 11
 #define buzzer 49
 #define ultrasonicSensor_trigger 43
 #define ultrasonicSensor_echo 44
@@ -87,10 +87,11 @@ Keypad keypad = Keypad(makeKeymap(keypadKey), keypadRowPin, keypadColumnPin, 4, 
 #define motors_IN4 53
 #define LED_red 7
 #define LED_green 8
-#define LED_blue 13
+#define LED_blue 12
 #define joystick_button 41
-#define joystick_VRX A12
 #define joystick_VRY A8
+#define joystick_VRX A12
+#define potentiometer A13
 // Modes
 enum Mode
 {
@@ -322,6 +323,9 @@ void setup()
   pinMode(motors_IN2, OUTPUT);
   pinMode(motors_IN3, OUTPUT);
   pinMode(motors_IN4, OUTPUT);
+  pinMode(motors_ENA, OUTPUT);
+  pinMode(motors_ENB, OUTPUT);
+  pinMode(potentiometer, INPUT);
   pinMode(ultrasonicSensor_trigger, OUTPUT);
   pinMode(ultrasonicSensor_echo, INPUT);
   LCD_welcomeMessage();
@@ -330,6 +334,7 @@ void setup()
 // Void loop
 void loop()
 {
+  motorsSpeed();
   char customKey = keypad.getKey();
   if (customKey == '#')
   {
@@ -730,6 +735,12 @@ void updateMovementState(String state, bool forceUpdate = false)
   }
 }
 // DC Motors - Verified
+void motorsSpeed(){
+  int potentiometerValue = analogRead(potentiometer); 
+  int speed = map(potentiometerValue, 0, 1023, 0, 255);
+  analogWrite(motors_ENA, speed);
+  analogWrite(motors_ENB, speed);
+}
 void motorsForward()
 {
   digitalWrite(motors_IN1, HIGH);
@@ -760,6 +771,8 @@ void motorsRight()
 }
 void motorsStop()
 {
+  analogWrite(motors_ENA, 0);
+  analogWrite(motors_ENB, 0);
   digitalWrite(motors_IN1, LOW);
   digitalWrite(motors_IN2, LOW);
   digitalWrite(motors_IN3, LOW);
@@ -3138,7 +3151,6 @@ void sevenSegment_displayLetter(char letter)
   }
 }
 // Prototype
-
 // eoPrototype
 static const int handleCredits_codeLinesCounter_endLine = __LINE__;
 static const int handleCredits_codeLinesCounter_calculator = handleCredits_codeLinesCounter_endLine - handleCredits_codeLinesCounter_firstLine;
