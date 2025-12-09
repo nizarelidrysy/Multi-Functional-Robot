@@ -7,8 +7,6 @@ static const int handleCredits_codeLinesCounter_firstLine = __LINE__;
 #include <Arduino.h>
 #include <Servo.h>
 #include <Wire.h>
-// Prototype
-// eoPrototype
 // Definitions
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Servo myServo;
@@ -265,6 +263,7 @@ const int TEST_ACTION_DURATION = 1000;
 const int LCD_ANIMATION_DELAY = 300;
 extern const int handleCredits_codeLinesCounter_endLine;
 extern const int handleCredits_codeLinesCounter_calculator;
+int menuPage = 1;
 const unsigned long MAZE_PAUSE_BLINK_INTERVAL = 300;
 const long OBSTACLE_DISTANCE = 15;
 unsigned long lastDistanceUpdateTime = 0;
@@ -384,9 +383,33 @@ void loop()
       }
     }
   }
-  if ((currentMode != NONE && customKey == 'D') || (currentMode == NONE && customKey == 'D'))
+  if (currentMode == NONE && ( (customKey == 'D') || (analogRead(joystick_VRX) < 250) || (analogRead(joystick_VRX) > 800) ) )
+  {
+    
+    sevenSegment_clearAllSegments();
+    LCD_menuMessage_buzzer_passiveBeep();
+    tone(buzzer, NOTE_C4);
+    digitalWrite(LED_green, HIGH);
+    menuPage++;
+    if (menuPage > 2)
+    {
+      tone(buzzer, NOTE_C6);
+      menuPage = 1;
+    }
+    LCD_menuMessage();
+    noTone(buzzer);
+    digitalWrite(LED_green, LOW);
+    delay(200);
+    return;
+  }
+  else if (currentMode != NONE && customKey == 'D')
   {
     handleEmergency();
+    menuPage++;
+    if (menuPage > 2)
+    {
+      menuPage = 1;
+    }
     LCD_menuMessage();
     return;
   }
@@ -551,7 +574,7 @@ void loop()
       }
     }
   }
-  if (((analogRead(joystick_VRX) < 150) || (Serial1.available() && Serial1.peek() == '7')) && currentMode != JOYSTICK_TEST && currentMode == NONE)
+  if (((customKey == '7') || (Serial1.available() && Serial1.peek() == '7')) && currentMode != JOYSTICK_TEST && currentMode == NONE)
   {
     currentMode = JOYSTICK_TEST;
     lcd.clear();
@@ -816,6 +839,7 @@ void handleReset(int handleReset_delay)
 // Emergency mode - Verified
 void handleEmergency()
 {
+  
   motorsStop();
   myServo.write(90);
   sevenSegment_clearAllSegments();
@@ -824,6 +848,7 @@ void handleEmergency()
   digitalWrite(LED_blue, LOW);
   servoPos = 90;
   isMazePaused = false;
+  menuPage = 1;
   ensureSingleModeAccess = 1;
   Serial.println(" -- EMERGENCY MODE TRIGGERED !");
   Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
@@ -2890,14 +2915,20 @@ void LCD_menuMessage()
   lcd.clear();
   Serial.println(" -- Choose a mode :");
   Serial1.println(" -- Choose a mode :");
+  if (menuPage == 1)
+  {
   LCD_displayMessageCentered(" BTH MZE MRS FLM", 0);
   LCD_displayMessageCentered(" DCE CRD MTT ATT", 1);
-  LCD_menuMessage_buzzer_passiveBeep();
+  }
+  else if (menuPage == 2){
+    LCD_displayMessageCentered(" JTT xxx xxx xxx", 0);
+    LCD_displayMessageCentered(" xxx xxx xxx xxx", 1);
+    }
   digitalWrite(LED_green, LOW);
   digitalWrite(LED_red, LOW);
   digitalWrite(LED_blue, LOW);
   myServo.write(90);
-}
+  }
 void LCD_menuMessage_animation()
 {
   if (currentMode != NONE)
@@ -3150,7 +3181,5 @@ void sevenSegment_displayLetter(char letter)
     digitalWrite(sevenSegmentPin[i], (segments >> i) & 0x01);
   }
 }
-// Prototype
-// eoPrototype
 static const int handleCredits_codeLinesCounter_endLine = __LINE__;
 static const int handleCredits_codeLinesCounter_calculator = handleCredits_codeLinesCounter_endLine - handleCredits_codeLinesCounter_firstLine;
