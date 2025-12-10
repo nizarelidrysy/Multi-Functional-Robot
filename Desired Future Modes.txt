@@ -1,4 +1,5 @@
 1. Pre defined melodies
+<<<<<<< HEAD
 2. Google Dinosaur Game
 3. Calculator
 4. Stopwatch
@@ -9,3 +10,16 @@
 9. Morse code decrypt game
 10. Servo aim guesser
 11. slot machine
+=======
+2. Google Dinosaur game
+3. Calculator
+4. Stopwatch
+5. Timer
+6. Sleepy LCD radar mode
+7. Simon Says game
+8. Reaction Test game
+9. Morse Code decrypter game
+10. Servo aim guesser
+11. Slot Machine
+12. Integrate CoolTerm with the controller (with python for example)
+>>>>>>> 83f3cef (added new modes / functionnalities suggestions)
