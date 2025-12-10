@@ -1,0 +1,12 @@
+1. Pre defined melodies
+2. Google Dinosaur game
+3. Calculator
+4. Stopwatch
+5. Timer
+6. Sleepy LCD radar mode
+7. Simon Says game
+8. Reaction Test game
+9. Morse Code decrypter game
+10. Servo aim guesser
+11. Slot Machine
+12. Integrate CoolTerm with the controller (with python for example)
