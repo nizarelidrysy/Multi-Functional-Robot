@@ -848,8 +848,8 @@ void handleEmergency()
   digitalWrite(LED_blue, LOW);
   servoPos = 90;
   isMazePaused = false;
-  menuPage = 1;
   ensureSingleModeAccess = 1;
+  menuPage++;
   Serial.println(" -- EMERGENCY MODE TRIGGERED !");
   Serial1.println(" -- EMERGENCY MODE TRIGGERED !");
   lcd.clear();
