@@ -12,4 +12,5 @@ build/
 .pio
 .vscode
 .DS_Store
-Other/
+Assets/
+v2.0/build/

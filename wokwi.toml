@@ -1,0 +1,6 @@
+[wokwi]
+version = 1
+# Point to the compiled .hex file
+firmware = '/v2.0/build/arduino.avr.mega/v2.0.ino.hex'
+# Point to the compiled .elf file
+elf = '/v2.0/build/arduino.avr.mega/v2.0.ino.elf'

@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "author": "Nizar EL IDRYSY",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-breadboard-mini",
+      "id": "bb2",
+      "top": -613.5,
+      "left": 589.1,
+      "rotate": 90,
+      "attrs": { "color": "#575756" }
+    },
+    {
+      "type": "wokwi-breadboard-mini",
+      "id": "bb3",
+      "top": -786.3,
+      "left": 589.1,
+      "rotate": 90,
+      "attrs": { "color": "#bd332f" }
+    },
+    { "type": "wokwi-arduino-mega", "id": "mega", "top": 0.6, "left": -3.6, "attrs": {} },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -406.4,
+      "left": 120.8,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": -109.4,
+      "left": 692.2,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1",
+      "top": -277.9,
+      "left": 688.5,
+      "rotate": 180,
+      "attrs": { "distance": "2" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -256.8,
+      "left": 376.2,
+      "attrs": { "volume": "0.1" }
+    },
+    {
+      "type": "wokwi-analog-joystick",
+      "id": "joystick1",
+      "top": -414.5,
+      "left": -126.5,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-7segment",
+      "id": "sevseg1",
+      "top": -187.02,
+      "left": 235.48,
+      "attrs": { "digits": "1", "colon": "", "common": "cathode" }
+    },
+    {
+      "type": "wokwi-membrane-keypad",
+      "id": "keypad1",
+      "top": -885.2,
+      "left": 111.2,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": -844.8,
+      "left": 470.4,
+      "attrs": { "text": "Arduino +5V" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": -652.8,
+      "left": 835.2,
+      "attrs": { "text": "Arduino GND" }
+    },
+    { "type": "wokwi-led", "id": "led1", "top": -224.4, "left": 71, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -224.4,
+      "left": 109.4,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -224.4,
+      "left": 147.8,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text3",
+      "top": -902.4,
+      "left": 624,
+      "attrs": { "text": "L298N +5V" }
+    },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": -212.5, "left": -115.4, "attrs": {} }
+  ],
+  "connections": [
+    [ "mega:21", "lcd1:SCL", "cyan", [ "v-28.2", "h123.3", "v-422.4", "h-374.4", "v105.3" ] ],
+    [ "mega:20", "lcd1:SDA", "yellow", [ "v-37.8", "h123.2", "v-403.2", "h-355.2", "v86.2" ] ],
+    [
+      "servo1:PWM",
+      "mega:4",
+      "orange",
+      [ "h-0.2", "v-9.4", "h1.2", "v185", "h-508.8", "v-249.6", "h-63" ]
+    ],
+    [ "bb2:1t.a", "bb2:2t.a", "cyan", [ "h0" ] ],
+    [ "bb2:3t.a", "bb2:4t.a", "cyan", [ "h0" ] ],
+    [ "bb2:5t.a", "bb2:6t.a", "cyan", [ "h0" ] ],
+    [ "bb2:7t.a", "bb2:8t.a", "cyan", [ "h0" ] ],
+    [ "bb2:9t.a", "bb2:10t.a", "cyan", [ "h0" ] ],
+    [ "bb2:11t.a", "bb2:12t.a", "cyan", [ "h0" ] ],
+    [ "bb2:13t.a", "bb2:14t.a", "cyan", [ "h0" ] ],
+    [ "bb2:15t.a", "bb2:16t.a", "cyan", [ "h0" ] ],
+    [ "bb2:16t.a", "bb2:17t.a", "cyan", [ "h0" ] ],
+    [ "bb2:15t.a", "bb2:14t.a", "cyan", [ "h0" ] ],
+    [ "bb2:9t.a", "bb2:8t.a", "cyan", [ "h0" ] ],
+    [ "bb2:11t.a", "bb2:10t.a", "cyan", [ "h0" ] ],
+    [ "bb2:13t.a", "bb2:12t.a", "cyan", [ "h0" ] ],
+    [ "bb2:7t.a", "bb2:6t.a", "cyan", [ "h0" ] ],
+    [ "bb2:4t.a", "bb2:5t.a", "cyan", [ "h0" ] ],
+    [ "bb2:3t.a", "bb2:2t.a", "cyan", [ "h0" ] ],
+    [ "bb3:17b.j", "bb3:16b.j", "blue", [ "h0" ] ],
+    [ "bb3:15b.j", "bb3:16b.j", "blue", [ "h0" ] ],
+    [ "bb3:14b.j", "bb3:15b.j", "blue", [ "h0" ] ],
+    [ "bb3:13b.j", "bb3:14b.j", "blue", [ "h0" ] ],
+    [ "bb3:12b.j", "bb3:13b.j", "blue", [ "h0" ] ],
+    [ "bb3:11b.j", "bb3:12b.j", "blue", [ "h0" ] ],
+    [ "bb3:10b.j", "bb3:11b.j", "blue", [ "h0" ] ],
+    [ "bb3:9b.j", "bb3:10b.j", "blue", [ "h0" ] ],
+    [ "bb3:8b.j", "bb3:9b.j", "blue", [ "h0" ] ],
+    [ "bb3:7b.j", "bb3:8b.j", "blue", [ "h0" ] ],
+    [ "bb3:6b.j", "bb3:7b.j", "blue", [ "h0" ] ],
+    [ "bb3:4b.j", "bb3:5b.j", "blue", [ "h0" ] ],
+    [ "bb3:6b.j", "bb3:5b.j", "blue", [ "h0" ] ],
+    [ "bb3:4b.j", "bb3:3b.j", "blue", [ "h0" ] ],
+    [ "bb3:3b.j", "bb3:2b.j", "blue", [ "h0" ] ],
+    [ "bb3:1b.j", "bb3:2b.j", "blue", [ "v0" ] ],
+    [ "ultrasonic1:VCC", "bb3:3b.i", "red", [ "v-76.8", "h-192", "v-422.4" ] ],
+    [ "bb3:2b.i", "servo1:V+", "red", [ "h-48", "v345.6", "h355.2", "v480", "h-164.1" ] ],
+    [ "bb3:1b.i", "mega:5V.2", "red", [ "v-19.2", "h-163.2", "v825.6", "h-96", "v-1" ] ],
+    [ "mega:43", "ultrasonic1:TRIG", "cyan", [ "h502.6", "v-439.9", "h-96.4" ] ],
+    [
+      "mega:44",
+      "ultrasonic1:ECHO",
+      "yellow",
+      [ "v1.8", "h-15.4", "v76.2", "h48", "v-76.2", "h489.6", "v-460.8", "h-112.4" ]
+    ],
+    [ "lcd1:VCC", "bb3:4b.i", "red", [ "h-48", "v-86.3", "h499.2", "v-316.8" ] ],
+    [ "bz1:1", "bb2:17t.b", "black", [ "v9.6", "h489.6", "v-307.2" ] ],
+    [ "mega:49", "bz1:2", "red", [ "v1.75", "h32.2" ] ],
+    [ "joystick1:VCC", "bb3:5b.i", "red", [ "v39.5", "h160.7", "v-163.2", "h393.6", "v-336" ] ],
+    [
+      "mega:A12",
+      "joystick1:HORZ",
+      "cyan",
+      [ "v7.5", "h-347.95", "v-201.6", "h80.4", "v-269.4", "h-131.9" ]
+    ],
+    [
+      "mega:A8",
+      "joystick1:VERT",
+      "yellow",
+      [ "v16.5", "h-319.05", "v-220.2", "h80.4", "v-250.2", "h-131.9" ]
+    ],
+    [ "mega:GND.5", "bb2:1t.b", "black", [ "v0.95", "h563.8", "v-796.8" ] ],
+    [ "ultrasonic1:GND", "bb2:15t.b", "black", [ "v-67.2", "h164.4", "v-144" ] ],
+    [ "mega:22", "sevseg1:A", "violet", [ "h305", "v-133.3", "h-360.4", "v-86.4", "h-33.2" ] ],
+    [
+      "mega:23",
+      "sevseg1:B",
+      "magenta",
+      [ "h-21.8", "v-8.5", "h264.4", "v-69.4", "h-393.6", "v-151.4", "h62" ]
+    ],
+    [ "sevseg1:C", "mega:24", "magenta", [ "v9.6", "h384", "v133.45" ] ],
+    [ "sevseg1:D", "mega:25", "magenta", [ "v19.2", "h393.6", "v123.85" ] ],
+    [ "sevseg1:E", "mega:26", "magenta", [ "v28.8", "h393.6", "v134.4", "h-276.2" ] ],
+    [
+      "sevseg1:F",
+      "mega:27",
+      "magenta",
+      [ "v-8.76", "h-19.2", "v115.2", "h393.6", "v0", "v114.15" ]
+    ],
+    [
+      "sevseg1:G",
+      "mega:28",
+      "magenta",
+      [ "v-18.36", "h-19.2", "v134.4", "h393.6", "v124.8", "h-257" ]
+    ],
+    [ "mega:35", "keypad1:R1", "blue", [ "h-41", "v-37.2", "h153.6", "v-556.8", "h-268.8" ] ],
+    [ "keypad1:R2", "mega:36", "blue", [ "v19.2", "h268.4", "v633.6", "h-163.2", "v-20.5" ] ],
+    [ "mega:37", "keypad1:R3", "blue", [ "v1.3", "h131.8", "v-595.2", "h-249.3" ] ],
+    [ "mega:38", "keypad1:R4", "blue", [ "v1.15", "h151.4", "v-595.2", "h-249.4" ] ],
+    [ "mega:34", "keypad1:C1", "gold", [ "v1.2", "h165.4", "v-566.4", "h-273.1" ] ],
+    [ "mega:32", "keypad1:C2", "yellow", [ "v1.1", "h170.6", "v-547.2", "h-249.6" ] ],
+    [ "mega:31", "keypad1:C3", "yellow", [ "v1", "h170.2", "v-528", "h-249.45" ] ],
+    [ "mega:30", "keypad1:C4", "yellow", [ "h7.4", "v-8.6", "h186.8", "v-508.8", "h-272.9" ] ],
+    [
+      "joystick1:GND",
+      "bb2:16t.b",
+      "black",
+      [ "v10.7", "h112.7", "v-124.8", "h700.8", "v-67.2" ]
+    ],
+    [ "servo1:GND", "bb2:13t.b", "black", [ "v12.4", "h134.4", "v-556.8" ] ],
+    [
+      "sevseg1:COM.2",
+      "bb2:14t.b",
+      "black",
+      [ "v-37.56", "h-57.6", "v172.8", "h182.4", "v182.4", "h528", "v-633.6" ]
+    ],
+    [
+      "joystick1:SEL",
+      "mega:41",
+      "orange",
+      [ "v58.7", "h429.5", "v86.4", "h76.8", "v259.2", "h-48", "v-1.25" ]
+    ],
+    [ "lcd1:GND", "bb2:12t.b", "black", [ "h-19.2", "v-28.8", "h662.4", "v-115.2" ] ],
+    [ "led1:C", "led2:C", "black", [ "v9.6", "h38.4" ] ],
+    [ "led3:C", "led2:C", "black", [ "v9.6", "h-38.4" ] ],
+    [ "led1:A", "mega:7", "red", [ "v19.2", "h96", "v172.8" ] ],
+    [ "led2:A", "mega:8", "limegreen", [ "v28.8", "h48", "v163.2" ] ],
+    [
+      "bb2:11t.b",
+      "led1:C",
+      "black",
+      [ "h57.6", "v134.4", "h-345.6", "v144", "h-364.8", "v76.8", "h18.8" ]
+    ],
+    [ "bb3:1t.a", "bb3:2t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:2t.a", "bb3:3t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:3t.a", "bb3:4t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:5t.a", "bb3:4t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:6t.a", "bb3:5t.a", "limegreen", [ "h0", "v-9.6" ] ],
+    [ "bb3:7t.a", "bb3:8t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:7t.a", "bb3:6t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:9t.a", "bb3:8t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:10t.a", "bb3:9t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:11t.a", "bb3:10t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:12t.a", "bb3:11t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:13t.a", "bb3:12t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:14t.a", "bb3:13t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:15t.a", "bb3:14t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:17t.a", "bb3:16t.a", "limegreen", [ "h0" ] ],
+    [ "bb3:16t.a", "bb3:15t.a", "limegreen", [ "h0" ] ],
+    [ "pot1:VCC", "bb3:6b.i", "red", [ "v19.2", "h-77.6", "v-777.6", "h585.6", "v153.6" ] ],
+    [ "pot1:GND", "bb2:8t.b", "black", [ "v28.8", "h-67.2", "v-796.8", "h912", "v355.2" ] ],
+    [ "pot1:SIG", "mega:A13", "orange", [ "v28.8", "h47.6", "v336", "h373.3" ] ],
+    [ "mega:12", "led3:A", "blue", [ "v-9.6", "h38.4", "v-144" ] ]
+  ],
+  "dependencies": {}
+}
