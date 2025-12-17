@@ -2287,7 +2287,7 @@ void handleCredits()
   digitalWrite(LED_blue, LOW);
   String creditsMessages[] = {
       "Made by :\nNizar EL IDRYSY",
-      "Contains the\nmodified .ino",
+      "Contains the\nv2.0.ino code",
       String(handleCredits_codeLinesCounter_calculator) + " lines of\ndedicated coding",
       "Use CoolTerm on\nWindows for HC06",
       "Shout out to my\nbro Gemini ;)",
