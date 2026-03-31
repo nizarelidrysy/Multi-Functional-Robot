@@ -59,3 +59,13 @@ This project is a continuous work in progress. Contributions, especially those e
 * Open a Pull Request.
 
 ---
+
+## 📄 License
+
+This project is open-source and open for contribution.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by Nizar EL IDRYSY.</p>
+</div>
