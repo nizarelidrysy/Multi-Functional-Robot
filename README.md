@@ -1,10 +1,10 @@
-## 🤖 DAMI 3000: An Advanced Modular Arduino Robot
+## DAMI 3000: An Advanced Modular Arduino Robot
 
 DAMI 3000 is an expanded and highly versatile **Arduino-based robot** designed to demonstrate advanced robotics, embedded systems, and user interaction concepts. This repository contains the latest iteration of the source code, featuring **nine distinct operational modes**, an intuitive menu system, and new communication capabilities.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 The project has evolved into a comprehensive platform with the following core functionalities:
 
@@ -39,7 +39,7 @@ The robot now supports a robust menu system, with the following nine operational
 
 ---
 
-## 🏃 Usage
+## Usage
 
 * **Startup:** The robot performs a welcome sequence, and the **LCD** displays the current menu page.
 * **Menu Navigation:** Press the **D key** (or move the joystick) to cycle through the menu pages. The LCD displays the mode name and the corresponding key to select it.
@@ -49,7 +49,7 @@ The robot now supports a robust menu system, with the following nine operational
 
 ---
 
-## 🤝 Contribution
+## Contribution
 
 This project is a continuous work in progress. Contributions, especially those expanding on the new modes or refining existing logic, are highly welcome!
 
