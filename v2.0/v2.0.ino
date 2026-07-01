@@ -2451,7 +2451,7 @@ void handleFollowMe()
   }
 }
 void saveVIN() {
-  String VIN = "Robot DAMI 3000. Created & assembled by Nizar EL IDRYSY. Last code change was made on 01 July 2026 at 08:30AM.";
+  String VIN = "Robot DAMI 3000. Created & assembled by Nizar EL IDRYSY. Last code change was made on 01 July 2026 at 10:39AM.";
   char buffer[65]; 
   VIN.toCharArray(buffer, sizeof(buffer));
   EEPROM.put(EEPROMVIN, buffer);
@@ -2601,25 +2601,23 @@ void handleCredits()
   digitalWrite(LED_blue, LOW);
   String creditsMessages[] = {
       "DAMI3000 Made by\nNizar EL IDRYSY",
-      "Last change on\n01/7/26-08:30AM",
+      "Last change on\n01/7/26-10:39AM",
       "Contains the\nv2.0.ino code",
       String(handleCredits_codeLinesCounter_calculator) + " lines of\ndedicated coding",
       "Use CoolTerm on\nWindows for HC06",
       "Shout out to my\nbro Gemini ;)",
-      "1500+ Dirhams of\nmaterials",
+      "1500+ MAD of\nmaterials",
       "Presented at 9AM\n18 June 2025",
       "EMSI-T - 2AP-G3\nGraded 17/20",
       "Rated the best\nrobot among all",
       "Funded by aunt\nHanane <3",
       "Named after my\ndad Imad XD",
-      "Groupe members :\nthat contributed",
-      "Zerrari Ziyad &\nAmine Habz &",
-      "Bilal Mesbahi.\nJury Members :",
+      "Jury Members :",
       "Pr. Bouazizi\nand",
       "Pr. Bendaoud\nKaoutar and",
       "Pr. Errezgouny\nAbderrachid.",
       "Shout out to my\nparents for",
-      "their support &\nhelp & care <3>",
+      "their support &\nhelp & care <3",
       "More on LinkedIn :\n@Nizar EL IDRYSY",
       "DAMI 3000 !\nLoves you ALL :D"};
   const int numMessages = sizeof(creditsMessages) / sizeof(creditsMessages[0]);
