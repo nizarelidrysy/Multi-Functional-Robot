@@ -1,71 +1,70 @@
-## DAMI 3000: An Advanced Modular Arduino Robot
+# DAMI 3000: Advanced Modular Arduino 4x4 Robot
 
-DAMI 3000 is an expanded and highly versatile **Arduino-based robot** designed to demonstrate advanced robotics, embedded systems, and user interaction concepts. This repository contains the latest iteration of the source code, featuring **nine distinct operational modes**, an intuitive menu system, and new communication capabilities.
-
----
-
-## Key Features
-
-The project has evolved into a comprehensive platform with the following core functionalities:
-
-### 1. Nine Operational Modes
-
-The robot now supports a robust menu system, with the following nine operational modes defined in the firmware:
-
-#### Navigation & Control:
-* **BLUETOOTH (1):** Remote control of movement, servo, and buzzer via a **Bluetooth connection**.
-* **MAZE (2):** Autonomous navigation using the **Right-Hand Algorithm** and obstacle avoidance.
-* **FOLLOW\_ME (A):** For object tracking or simple follow behavior.
-* **JOYSTICK\_TEST (7):** Dedicated mode for testing joystick input and controls.
-
-#### Utility & Diagnostics:
-* **AUTO-TST (B):** Diagnostic mode (TESTING) for sequentially testing motors (Forward/Backward), servo (Left/Center/Right), and LEDs.
-* **MAN\_TST (6):** A dedicated mode for manual, low-level testing of individual components via the keypad.
-* **CREDITS (5):** Displays project information or development credits on the **LCD**, with an optional servo sweep feature.
-
-#### Novelty & Communications:
-* **MORSE\_COM (3):** Transmits characters via the **buzzer and LEDs** using Morse code.
-* **DICE (4):** A simple rolling dice simulation displayed on the **7-Segment Display**.
-
-### 2. Keypad-Driven Menu System
-
-* **Menu Navigation:** The menu system is navigated by pressing the designated key on the **4x4 Keypad** (**D** in the default configuration) or by moving the joystick left/right. This cycles through available modes on the **16x2 I2C LCD**.
-* **Mode Activation:** Modes are activated by pressing the corresponding number or letter key shown on the LCD menu.
-* **Morse Input:** The **MORSE\_COM** mode primarily accepts characters for translation via the **Bluetooth/Serial connection** (**Serial1**).
-
-### 3. Core Robotics & Safety
-* **Safety Features:** A global **emergency stop function** is available via the designated keypad button (**D** key in operational modes) which immediately halts all motors and resets the robot state.
-* **Dynamic Visual Feedback:** **RGB LEDs** and the **7-Segment Display** are utilized to provide welcoming sequences, mode indicators (e.g., blinking **1** for Bluetooth, **P** for pause), and dynamic light/segment patterns based on the robot's state.
+The DAMI 3000 is an ultra-versatile, mega-expanded robotics platform powered by an Arduino MEGA 2560. Designed to integrate autonomous navigation, sensory feedback, interactive entertainment, and utilities, this project packs massive functionality into a single modular codebase.
 
 ---
 
-## Usage
+## Hardware Architecture
 
-* **Startup:** The robot performs a welcome sequence, and the **LCD** displays the current menu page.
-* **Menu Navigation:** Press the **D key** (or move the joystick) to cycle through the menu pages. The LCD displays the mode name and the corresponding key to select it.
-* **Mode Selection:** Press the associated key (**1** through **7**, **A**, or **B**) on the keypad to select the desired mode.
-* **Pause Function:** In operational modes like **BLUETOOTH** or **MAZE**, press the **# key** to toggle the robot's pause state.
-* **Emergency Stop:** Press the designated emergency stop key (**D** in an active mode) on the keypad at any time to immediately halt all operations and reset to the main menu.
-
----
-
-## Contribution
-
-This project is a continuous work in progress. Contributions, especially those expanding on the new modes or refining existing logic, are highly welcome!
-
-* Fork the repository.
-* Create your feature branch (\`git checkout -b feature/new-mode\`).
-* Commit your changes.
-* Open a Pull Request.
+The firmware orchestrates a diverse array of hardware components integrated directly onto the robot:
+* **Brain:** Arduino MEGA 2560
+* **Locomotion:** L298N H-Bridge controlling dual DC motors (with analog potentiometer speed control)
+* **Vision & Range:** HC-SR04 Ultrasonic Sensor mounted on a high-torque Servo Motor
+* **User Interaction:** 16x2 I2C LCD, 4x4 Matrix Keypad, 2-Axis Joystick, and a 7-Segment Display
+* **Feedback Matrix:** Active/Passive Buzzer and full-spectrum RGB LEDs
 
 ---
 
-## 📄 License
+## Integrated Operational Modes
 
-This project is open-source and open for contribution.
+The DAMI 3000 firmware features 17 distinct execution modes categorized below. *No complex menu shortcuts required—just smooth, dynamic cycling directly through the I2C LCD.*
+
+### Autonomous & Manual Control
+* **BLUETOOTH:** Remote operation over serial connection (HC-06) supporting directional drive commands, servo sweeps, and custom horn triggers, all using android (BLE enabled) or *CoolTerm* on Windows 10.
+* **MAZE:** Autonomous navigation driven by a smart *Right-Hand Algorithm* with automatic obstacle scanning and path clearing.
+* **FOLLOW ME:** Real-time object tracking utilizing a customizable ultrasonic range threshold adjustable on-the-fly via the joystick.
+* **OFF:** Enters a low-power, safe standby sequence accompanied by an off-tone alert.
+
+### Interactive Mini-Games
+* **CHROME DINAUSOR GAME:** An LCD-rendered endless side-scroller game using the joystick to jump over obstacles and track high scores in EEPROM.
+* **SIMON SAYS:** A memory matching visual game testing reflexes and sequential recall.
+* **REACTION:** A lightning-fast reflex testing mode logging milliseconds straight to onboard storage.
+
+### Novelties & Simulations
+* **SLEEPY RADAR:** Sweeps the servo to monitor surrounding vectors, scanning objects within immediate proximity.
+* **MORSE COMMUNICATION:** Translates characters input over serial link directly into standard audio-visual Morse code via buzzer and RGB states.
+* **DICE:** True randomized rolling numbers simulated dynamically across the 7-Segment screen.
+* **MELODIES:** Pre-programmed music mode utilizing the passive buzzer to play classic multi-note chiptunes.
+
+### Daily Utilities
+* **CALCULATOR:** Full float-based mathematical terminal input directly via the 4x4 matrix keypad layout.
+* **STOPWATCH AND TIMER:** Dual-purpose precision timepiece featuring countdown alarms and standalone run logs.
+* **CREDITS:** Displays project milestones, lineage, development specs, and special acknowledgments across the screens.
+
+### Hardware Diagnostics
+* **AUTOMATIC TEST:** A safe sequential self-test pulsing motor directions, testing RGB limits, and running servo sweeps.
+* **MANUAL TEST:** Low-level diagnostic state allowing devs to isolate single pin components via specific keystrokes.
+* **JOYSTICK TEST:** Raw feedback monitoring showing XY boundaries directly on the telemetry terminal.
+
+---
+
+## Built-in Safety Protocols
+
+> **Emergency State Reset:** 
+> The firmware intercepts a global emergency key (`D`) during ALL active states. Triggering it instantly overrides execution, forcefully kills the L298N drive lines, initializes safe servo seating ($90^\circ$), flashes warning telemetry data, and cycles the buzzer aggressively until structural safety is restored.
+
+---
+
+## Contribution Workflow
+
+Want to optimize the navigation algorithms or introduce an 18th operational mode? Contributions are welcome:
+1. Fork this repository.
+2. Setup your feature branch (`git checkout -b feature/amazing-new-mode`).
+3. Document any newly added hardware pins or dependencies.
+4. Open a clean Pull Request.
 
 ---
 
 <div align="center">
-  <p>Built with ❤️ by Nizar EL IDRYSY.</p>
+  <p>Engineered with dedication by Nizar EL IDRYSY ❤️</p>
 </div>
