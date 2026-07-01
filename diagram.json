@@ -85,7 +85,7 @@
       "left": 835.2,
       "attrs": { "text": "Arduino GND" }
     },
-    { "type": "wokwi-led", "id": "led1", "top": -224.4, "left": 71, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led1", "top": -224.4, "left": 71, "attrs": { "color": "blue" } },
     {
       "type": "wokwi-led",
       "id": "led2",
@@ -98,7 +98,7 @@
       "id": "led3",
       "top": -224.4,
       "left": 147.8,
-      "attrs": { "color": "blue" }
+      "attrs": { "color": "red" }
     },
     {
       "type": "wokwi-text",
@@ -243,7 +243,6 @@
     [ "lcd1:GND", "bb2:12t.b", "black", [ "h-19.2", "v-28.8", "h662.4", "v-115.2" ] ],
     [ "led1:C", "led2:C", "black", [ "v9.6", "h38.4" ] ],
     [ "led3:C", "led2:C", "black", [ "v9.6", "h-38.4" ] ],
-    [ "led1:A", "mega:7", "red", [ "v19.2", "h96", "v172.8" ] ],
     [ "led2:A", "mega:8", "limegreen", [ "v28.8", "h48", "v163.2" ] ],
     [
       "bb2:11t.b",
@@ -270,7 +269,8 @@
     [ "pot1:VCC", "bb3:6b.i", "red", [ "v19.2", "h-77.6", "v-777.6", "h585.6", "v153.6" ] ],
     [ "pot1:GND", "bb2:8t.b", "black", [ "v28.8", "h-67.2", "v-796.8", "h912", "v355.2" ] ],
     [ "pot1:SIG", "mega:A13", "orange", [ "v28.8", "h47.6", "v336", "h373.3" ] ],
-    [ "mega:12", "led3:A", "blue", [ "v-9.6", "h38.4", "v-144" ] ]
+    [ "led1:A", "mega:12", "blue", [ "v38.4", "h38.4" ] ],
+    [ "mega:7", "led3:A", "red", [ "v0" ] ]
   ],
   "dependencies": {}
 }
