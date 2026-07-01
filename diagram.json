@@ -53,8 +53,8 @@
     {
       "type": "wokwi-analog-joystick",
       "id": "joystick1",
-      "top": -414.5,
-      "left": -126.5,
+      "top": -417,
+      "left": -127.6,
       "attrs": {}
     },
     {
@@ -107,7 +107,15 @@
       "left": 624,
       "attrs": { "text": "L298N +5V" }
     },
-    { "type": "wokwi-potentiometer", "id": "pot1", "top": -212.5, "left": -115.4, "attrs": {} }
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": -212.5, "left": -115.4, "attrs": {} },
+    { "type": "wokwi-logo", "id": "logo1", "top": -883.2, "left": -134.4, "attrs": {} },
+    {
+      "type": "wokwi-text",
+      "id": "text4",
+      "top": -854.4,
+      "left": -134.4,
+      "attrs": { "text": "DAMI 3000 - Nizar EL IDRYSY" }
+    }
   ],
   "connections": [
     [ "mega:21", "lcd1:SCL", "cyan", [ "v-28.2", "h123.3", "v-422.4", "h-374.4", "v105.3" ] ],
@@ -163,18 +171,18 @@
     [ "lcd1:VCC", "bb3:4b.i", "red", [ "h-48", "v-86.3", "h499.2", "v-316.8" ] ],
     [ "bz1:1", "bb2:17t.b", "black", [ "v9.6", "h489.6", "v-307.2" ] ],
     [ "mega:49", "bz1:2", "red", [ "v1.75", "h32.2" ] ],
-    [ "joystick1:VCC", "bb3:5b.i", "red", [ "v39.5", "h160.7", "v-163.2", "h393.6", "v-336" ] ],
+    [ "joystick1:VCC", "bb3:5b.i", "red", [ "v42", "h123.4", "v-165.7", "h430.9", "v-333.5" ] ],
     [
       "mega:A12",
       "joystick1:HORZ",
       "cyan",
-      [ "v7.5", "h-347.95", "v-201.6", "h80.4", "v-269.4", "h-131.9" ]
+      [ "v7.5", "h-347.95", "v-201.6", "h80.4", "v-432.6", "h-48", "v163.2", "h-85" ]
     ],
     [
       "mega:A8",
       "joystick1:VERT",
       "yellow",
-      [ "v16.5", "h-319.05", "v-220.2", "h80.4", "v-250.2", "h-131.9" ]
+      [ "v16.5", "h-319.05", "v-220.2", "h80.4", "v-413.4", "h-28.8", "v163.2", "h-104.2" ]
     ],
     [ "mega:GND.5", "bb2:1t.b", "black", [ "v0.95", "h563.8", "v-796.8" ] ],
     [ "ultrasonic1:GND", "bb2:15t.b", "black", [ "v-67.2", "h164.4", "v-144" ] ],
@@ -208,12 +216,7 @@
     [ "mega:32", "keypad1:C2", "yellow", [ "v1.1", "h170.6", "v-547.2", "h-249.6" ] ],
     [ "mega:31", "keypad1:C3", "yellow", [ "v1", "h170.2", "v-528", "h-249.45" ] ],
     [ "mega:30", "keypad1:C4", "yellow", [ "h7.4", "v-8.6", "h186.8", "v-508.8", "h-272.9" ] ],
-    [
-      "joystick1:GND",
-      "bb2:16t.b",
-      "black",
-      [ "v10.7", "h112.7", "v-124.8", "h700.8", "v-67.2" ]
-    ],
+    [ "joystick1:GND", "bb2:16t.b", "black", [ "h46.6", "v-42", "v-72.1", "h766.9", "v-64.7" ] ],
     [ "servo1:GND", "bb2:13t.b", "black", [ "v12.4", "h134.4", "v-556.8" ] ],
     [
       "sevseg1:COM.2",
@@ -225,7 +228,7 @@
       "joystick1:SEL",
       "mega:41",
       "orange",
-      [ "v58.7", "h429.5", "v86.4", "h76.8", "v259.2", "h-48", "v-1.25" ]
+      [ "v13.2", "h65.8", "v-268.8", "h463.6", "v659.9", "h-71.1", "v1.25" ]
     ],
     [ "lcd1:GND", "bb2:12t.b", "black", [ "h-19.2", "v-28.8", "h662.4", "v-115.2" ] ],
     [ "led1:C", "led2:C", "black", [ "v9.6", "h38.4" ] ],

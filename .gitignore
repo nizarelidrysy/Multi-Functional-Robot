@@ -6,11 +6,6 @@
 *.sketch.bin
 *.sketch.hex
 .DS_Store
-build/
-.arduino/
-
 .pio
 .vscode
-.DS_Store
 My Assets/
-v2.0/build/

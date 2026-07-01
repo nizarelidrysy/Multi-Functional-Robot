@@ -1,3 +1,0 @@
-handleCredits() :
-
-* make the credits mode controllable with the joystick to switch between messages.
